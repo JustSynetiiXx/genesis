@@ -4,3 +4,8 @@ __pycache__/
 *.sqlite
 .pytest_cache/
 logs/
+shared/sensoren.bin
+shared/signal.txt
+shared/genesis_status.bin
+/tmp/
+*.pid
