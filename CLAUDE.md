@@ -118,7 +118,7 @@ Eltern-Interface: Umgebung verändern, Signale senden, alles wird geloggt.
 
 ## Aktueller Status
 
-**Phase 0 — EKG-System:** Noch nicht begonnen. Das ist der nächste Schritt.
+**Phase 1 — Basis Code: ABGESCHLOSSEN.** Das Neugeborene ist implementiert und getestet (132 Tests). Nächster Schritt: Phase 2 — Beobachtung.
 
 ---
 
@@ -247,27 +247,27 @@ Baby auf Herdplatte: Einmal reicht. Baby strampelt Decke weg: Braucht viele Vers
 
 ## Phasen-Übersicht
 
-### Phase 0: EKG-System (AKTUELL — 1-2 Wochen)
-- [ ] Sensor-Dienst auf Host (psutil, lm-sensors)
-- [ ] Shared Directory über virtio-fs einrichten
-- [ ] KVM VM einrichten (Ubuntu minimal, 2 Kerne, 2GB RAM, 10GB Disk)
-- [ ] Sensor-Durchreichung testen
-- [ ] EKG-Dashboard (5 Panels)
-- [ ] Eltern-Interface
-- [ ] Schlaf-Signal-Mechanismus
-- [ ] Tests ohne Genesis (nur Sensoren und Dashboard)
+### Phase 0: EKG-System (ABGESCHLOSSEN)
+- [x] Sensor-Dienst auf Host (psutil, lm-sensors)
+- [x] Shared Directory über virtio-fs einrichten
+- [x] KVM VM einrichten (Ubuntu minimal, 2 Kerne, 2GB RAM, 10GB Disk)
+- [x] Sensor-Durchreichung testen
+- [x] EKG-Dashboard (5 Panels)
+- [x] Eltern-Interface
+- [x] Schlaf-Signal-Mechanismus
+- [x] Tests ohne Genesis (nur Sensoren und Dashboard)
 
-### Phase 1: Basis Code (2-4 Wochen)
-- [ ] Sensorik (Shared Directory lesen + VM-Sensoren)
-- [ ] Zustandskategorien
-- [ ] Schmerzempfinden + Wohlbefinden
-- [ ] Reflexe
-- [ ] Schlaf-Wach-Zyklus + Todeslücke
-- [ ] 5 Aktionen + natürlicher Verfall
-- [ ] Lernmechanismus (Kandidat D)
-- [ ] SQLite-Gedächtnis
-- [ ] Hauptloop (leben.py)
-- [ ] Integration + Tests
+### Phase 1: Basis Code (ABGESCHLOSSEN)
+- [x] Sensorik (Shared Directory lesen + VM-Sensoren) — koerper.py
+- [x] Zustandskategorien — koerper.py
+- [x] Schmerzempfinden + Wohlbefinden — schmerz.py
+- [x] Reflexe — reflexe.py
+- [x] Schlaf-Wach-Zyklus + Todeslücke — schlaf.py
+- [x] 5 Aktionen + natürlicher Verfall — aktionen.py
+- [x] Lernmechanismus (Kandidat D) — lernen.py
+- [x] SQLite-Gedächtnis — gedaechtnis.py
+- [x] Hauptloop (leben.py)
+- [x] Integration + Tests (132 Tests bestanden)
 
 ### Phase 2: Beobachtung (2-4 Wochen)
 - [ ] System laufen lassen
