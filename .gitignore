@@ -9,3 +9,5 @@ shared/signal.txt
 shared/genesis_status.bin
 /tmp/
 *.pid
+vm-setup/*.img
+vm-setup/*.qcow2
