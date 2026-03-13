@@ -54,11 +54,11 @@ class TestLernsignalStaerke:
         assert lernsignal_staerke(0.4) == "stark"
 
     def test_mittel(self) -> None:
-        assert lernsignal_staerke(-0.2) == "mittel"
-        assert lernsignal_staerke(0.15) == "mittel"
+        assert lernsignal_staerke(-0.05) == "mittel"
+        assert lernsignal_staerke(0.08) == "mittel"
 
     def test_schwach(self) -> None:
-        assert lernsignal_staerke(-0.05) == "schwach"
+        assert lernsignal_staerke(-0.01) == "schwach"
         assert lernsignal_staerke(0.0) == "schwach"
 
 

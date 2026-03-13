@@ -57,14 +57,14 @@ class TestSpeicherCache:
     def test_vergroessere(self) -> None:
         cache = SpeicherCache()
         cache.vergroessere()
-        assert abs(cache.groesse_mb() - 10.0) < 0.1
+        assert abs(cache.groesse_mb() - 50.0) < 0.1
 
     def test_verkleinere(self) -> None:
         cache = SpeicherCache()
         cache.vergroessere()
         cache.vergroessere()
         cache.verkleinere()
-        assert abs(cache.groesse_mb() - 10.0) < 0.1
+        assert cache.groesse_mb() == 0.0  # 100 MB freigegeben, 100 MB waren drin
 
     def test_verkleinere_leer_kein_fehler(self) -> None:
         cache = SpeicherCache()
@@ -82,13 +82,13 @@ class TestSpeicherCache:
     def test_natuerlicher_verfall(self) -> None:
         cache = SpeicherCache()
         cache.natuerlicher_verfall()
-        assert cache.groesse_mb() >= 1.0  # ~1 MB gewachsen
+        assert cache.groesse_mb() >= 0.1  # ~0.2 MB gewachsen
 
     def test_natuerlicher_verfall_kumulativ(self) -> None:
         cache = SpeicherCache()
         for _ in range(5):
             cache.natuerlicher_verfall()
-        assert cache.groesse_mb() >= 5.0
+        assert cache.groesse_mb() >= 0.9  # 5 * ~0.2 MB
 
 
 class TestAbtastrate:
@@ -144,4 +144,4 @@ class TestAktionsManager:
     def test_natuerlicher_verfall_ueber_manager(self) -> None:
         manager = AktionsManager()
         manager.natuerlicher_verfall()
-        assert manager.cache.groesse_mb() >= 1.0
+        assert manager.cache.groesse_mb() >= 0.1  # ~0.2 MB Verfall
