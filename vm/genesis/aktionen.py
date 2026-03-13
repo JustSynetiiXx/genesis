@@ -98,13 +98,17 @@ class SpeicherCache:
         """Fügt ~10 MB zum Cache hinzu."""
         with self._lock:
             if self.groesse_mb() < CACHE_MAX_MB:
-                self._daten.append(bytearray(10 * 1024 * 1024))
+                self._daten.append(bytearray(50 * 1024 * 1024))
 
     def verkleinere(self) -> None:
         """Gibt ~10 MB vom Cache frei."""
         with self._lock:
-            if self._daten:
-                self._daten.pop()
+            # Feste 100 MB freigeben
+            freizugeben = 100 * 1024 * 1024
+            freigegeben = 0
+            while self._daten and freigegeben < freizugeben:
+                chunk = self._daten.pop()
+                freigegeben += len(chunk)
 
     def notfall_freigeben(self) -> None:
         """Gibt ALLES frei (für Reflexe)."""
@@ -118,7 +122,8 @@ class SpeicherCache:
         Wenn nicht aktiv aufgeräumt → RAM füllt sich langsam → Tod.
         """
         with self._lock:
-            self._daten.append(bytearray(VERFALL_MB_PRO_TICK * 1024 * 1024))
+            if self.groesse_mb() < CACHE_MAX_MB:
+                self._daten.append(bytearray(int(VERFALL_MB_PRO_TICK * 1024 * 1024)))
 
     def groesse_mb(self) -> float:
         """Aktueller Cache in MB."""

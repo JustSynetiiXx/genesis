@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 # --- Pfade ---
-SHARED_DIR: Path = Path("/mnt/shared")
+SHARED_DIR: Path = Path("/opt/genesis/shared")
 SENSOR_DATEI: str = "sensoren.bin"
 SIGNAL_DATEI: str = "signal.txt"
 STATUS_DATEI: str = "genesis_status.json"
@@ -21,16 +21,16 @@ WACHPHASE_SEKUNDEN: int = 30         # Sekunden nur Fühlen am Anfang
 HEARTBEAT_INTERVALL: int = 5         # Sekunden zwischen Heartbeat-Updates
 
 # --- Natürlicher Verfall ---
-VERFALL_MB_PRO_TICK: int = 1         # MB Cache-Wachstum pro Loop-Iteration
+VERFALL_MB_PRO_TICK: float = 0.2         # MB Cache-Wachstum pro Loop-Iteration
 
 # --- Lernen ---
-LERNSCHWELLE_STARK: float = 0.3      # |delta| > 0.3 → sofort gelernt
-LERNSCHWELLE_MITTEL: float = 0.1     # |delta| > 0.1 → braucht Wiederholungen
+LERNSCHWELLE_STARK: float = 0.1      # |delta| > 0.3 → sofort gelernt
+LERNSCHWELLE_MITTEL: float = 0.02     # |delta| > 0.1 → braucht Wiederholungen
 WIEDERHOLUNGEN_MITTEL: int = 3       # Wiederholungen für mittlere Signale
 WIEDERHOLUNGEN_SCHWACH: int = 5      # Wiederholungen für schwache Signale
 
 # --- Speicher-Cache ---
-CACHE_MAX_MB: int = 500              # Absolutes Maximum bevor Notfall
+CACHE_MAX_MB: int = 1000              # Absolutes Maximum bevor Notfall
 
 # --- Pause ---
 PAUSE_MIN_SEKUNDEN: float = 1.0

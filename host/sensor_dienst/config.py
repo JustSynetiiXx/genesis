@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 # --- Pfade ---
-SHARED_VERZEICHNIS: Path = Path("/home/max/genesis/shared/")
+SHARED_VERZEICHNIS: Path = Path("/opt/genesis/shared/")
 SENSOR_DATEI: str = "sensoren.bin"
 SIGNAL_DATEI: str = "signal.txt"
 STATUS_DATEI: str = "genesis_status.bin"
