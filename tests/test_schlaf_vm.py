@@ -180,3 +180,117 @@ class TestAufwachen:
         ergebnisse = langzeit.suche({"vm_ram": "voll"})
         assert len(ergebnisse) >= 1
         assert ergebnisse[0].durchschnitt_delta > 0  # Positiv = schlecht
+
+
+class TestKompletterSchlafZyklus:
+    """Kompletter Schlaf-Aufwach-Zyklus — der Bug-Reproduktionstest.
+
+    Bug war: einschlafen() setzt schlaf_marker=True, aber der finally-Block
+    in leben.py überschrieb ihn mit schlaf_marker=False. Beim Aufwachen
+    wurde sauberer Schlaf als Tod erkannt.
+    """
+
+    def test_einschlafen_aufwachen_kein_tod(
+        self,
+        kurzzeit: KurzzeitGedaechtnis,
+        langzeit: LangzeitGedaechtnis,
+        heartbeat: Heartbeat,
+        tmp_path: Path,
+    ) -> None:
+        """Kompletter Zyklus: Einschlafen → Aufwachen → Typ ist 'schlaf', nicht 'tod'."""
+        zustand = {"cpu_temp": "normal", "vm_ram": "normal"}
+        schmerz = 0.15
+
+        # 1. Einschlafen (wie in leben.py)
+        einschlafen(
+            kurzzeit, langzeit, heartbeat,
+            zustand, schmerz, tmp_path / "signal.txt",
+        )
+
+        # 2. Marker prüfen — muss True sein
+        hb = heartbeat.lese()
+        assert hb is not None
+        assert hb["schlaf_marker"] is True, "Schlaf-Marker muss nach einschlafen() True sein"
+
+        # 3. Aufwachen — muss als Schlaf erkannt werden
+        status = aufwachen(langzeit, heartbeat)
+        assert status["typ"] == "schlaf", (
+            f"Erwartet 'schlaf', bekommen '{status['typ']}'. "
+            f"Schlaf-Marker wurde zwischen einschlafen() und aufwachen() überschrieben!"
+        )
+
+        # 4. Kein Tod im Langzeitgedächtnis
+        assert langzeit.anzahl_tode() == 0, "Sauberer Schlaf darf keinen Tod erzeugen"
+
+    def test_einschlafen_finally_ueberschreibt_nicht(
+        self,
+        kurzzeit: KurzzeitGedaechtnis,
+        langzeit: LangzeitGedaechtnis,
+        heartbeat: Heartbeat,
+        tmp_path: Path,
+    ) -> None:
+        """Simuliert den leben.py-finally-Block: Schlaf-Marker darf nicht
+        überschrieben werden wenn modus == 'einschlafen'."""
+        zustand = {"cpu_temp": "normal", "vm_ram": "normal"}
+        schmerz = 0.15
+        modus = "einschlafen"
+
+        # Einschlafen setzt Marker
+        einschlafen(
+            kurzzeit, langzeit, heartbeat,
+            zustand, schmerz, tmp_path / "signal.txt",
+        )
+
+        # Simuliere den korrigierten finally-Block aus leben.py
+        if modus != "einschlafen":
+            heartbeat.aktualisiere(zustand, schmerz, schlaf_marker=False)
+
+        # Marker muss immer noch True sein
+        hb = heartbeat.lese()
+        assert hb is not None
+        assert hb["schlaf_marker"] is True
+
+        # Aufwachen erkennt Schlaf korrekt
+        status = aufwachen(langzeit, heartbeat)
+        assert status["typ"] == "schlaf"
+
+    def test_absturz_nach_normalem_loop_ist_tod(
+        self,
+        langzeit: LangzeitGedaechtnis,
+        heartbeat: Heartbeat,
+    ) -> None:
+        """Wenn der Prozess im normalen Modus stirbt (kein Einschlafen),
+        soll es als Tod erkannt werden."""
+        zustand = {"cpu_temp": "warm", "vm_ram": "eng"}
+        schmerz = 0.45
+        modus = "normal"
+
+        # Simuliere den finally-Block bei Absturz
+        if modus != "einschlafen":
+            heartbeat.aktualisiere(zustand, schmerz, schlaf_marker=False)
+
+        # Aufwachen erkennt Tod korrekt
+        status = aufwachen(langzeit, heartbeat)
+        assert status["typ"] == "tod"
+        assert langzeit.anzahl_tode() == 1
+
+    def test_mehrere_schlaf_zyklen(
+        self,
+        kurzzeit: KurzzeitGedaechtnis,
+        langzeit: LangzeitGedaechtnis,
+        heartbeat: Heartbeat,
+        tmp_path: Path,
+    ) -> None:
+        """Mehrere Schlaf-Aufwach-Zyklen hintereinander — keiner darf als Tod erkannt werden."""
+        zustand = {"cpu_temp": "normal", "vm_ram": "normal"}
+
+        for i in range(3):
+            einschlafen(
+                kurzzeit, langzeit, heartbeat,
+                zustand, 0.1, tmp_path / "signal.txt",
+            )
+
+            status = aufwachen(langzeit, heartbeat)
+            assert status["typ"] == "schlaf", f"Zyklus {i+1}: Schlaf als Tod erkannt!"
+
+        assert langzeit.anzahl_tode() == 0

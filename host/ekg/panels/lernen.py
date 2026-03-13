@@ -1,16 +1,36 @@
 """Lern-Panel: Erfahrungsdatenbank und Lernfortschritt.
 
-In Phase 0 zeigt dieses Panel nur einen Platzhalter.
-Vorbereitet für: DB-Größe, gelernte Muster, Erfolgsraten.
+Liest genesis_status.json aus dem Shared Directory und zeigt:
+- Erfahrungen heute (Kurzzeitgedächtnis), Langzeit, Tode, letzter Tod-Zustand.
 """
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+
+
+# Pfad zur Genesis-Status-Datei
+_PROJEKT_WURZEL: Path = Path(__file__).resolve().parent.parent.parent.parent
+_STATUS_DATEI: Path = _PROJEKT_WURZEL / "shared" / "genesis_status.json"
+
+
+def _lese_status() -> dict[str, Any] | None:
+    """Liest genesis_status.json atomar.
+
+    Returns:
+        Status-Dictionary oder None wenn nicht lesbar.
+    """
+    try:
+        rohdaten: bytes = _STATUS_DATEI.read_bytes()
+        return json.loads(rohdaten)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return None
 
 
 def erstelle_panel(
@@ -19,79 +39,58 @@ def erstelle_panel(
     """Erstellt das Lern-Panel.
 
     Args:
-        lern_status: Lernstatus-Dictionary von Genesis (Phase 1+),
-            oder None wenn Genesis nicht aktiv ist.
+        lern_status: Wird ignoriert — liest direkt aus genesis_status.json.
 
     Returns:
         Rich Panel mit Lerninformationen.
     """
-    if lern_status is None:
-        # Phase 0: Genesis nicht aktiv
+    status: dict[str, Any] | None = _lese_status()
+
+    if status is None:
         inhalt = Table(show_header=False, box=None, expand=True, padding=(0, 1))
         inhalt.add_column("Info", ratio=1)
-
         inhalt.add_row(Text("Genesis nicht aktiv", style="dim"))
-        inhalt.add_row(Text(""))
-        inhalt.add_row(Text("Phase 0: Nur Sensoren und EKG", style="dim italic"))
-        inhalt.add_row(Text(""))
-        inhalt.add_row(Text("Vorbereitet für:", style="dim"))
-        inhalt.add_row(Text("  • Erfahrungsdatenbank-Größe", style="dim"))
-        inhalt.add_row(Text("  • Gelernte Muster", style="dim"))
-        inhalt.add_row(Text("  • Erfolgsraten pro Aktion", style="dim"))
-        inhalt.add_row(Text("  • Lernkurve", style="dim"))
-
         return Panel(inhalt, title="🧠 Lernen", border_style="dim")
 
-    # Phase 1+: Genesis aktiv — Lernstatus anzeigen
+    # Genesis aktiv — Lernstatus anzeigen
     tabelle = Table(show_header=False, box=None, expand=True, padding=(0, 1))
     tabelle.add_column("Bezeichnung", style="bold", width=22)
     tabelle.add_column("Wert", ratio=1)
 
-    # Erfahrungsdatenbank
-    erfahrungen: int = lern_status.get("anzahl_erfahrungen", 0)
+    # Erfahrungen heute (Kurzzeitgedächtnis)
+    erfahrungen_heute: int = status.get("erfahrungen_heute") or 0
     tabelle.add_row(
-        "Erfahrungen gesamt",
-        Text(f"{erfahrungen:,}", style="cyan"),
+        "Erfahrungen heute",
+        Text(f"{erfahrungen_heute:,}", style="cyan"),
     )
 
-    # Gelernte Muster
-    muster: int = lern_status.get("gelernte_muster", 0)
+    # Erfahrungen Langzeit
+    erfahrungen_langzeit: int = status.get("erfahrungen_langzeit") or 0
     tabelle.add_row(
-        "Gelernte Muster",
-        Text(f"{muster:,}", style="cyan"),
+        "Erfahrungen Langzeit",
+        Text(f"{erfahrungen_langzeit:,}", style="cyan"),
     )
 
-    # Einzigartige Zustände
-    zustaende: int = lern_status.get("einzigartige_zustaende", 0)
-    tabelle.add_row(
-        "Einzigartige Zustände",
-        Text(f"{zustaende:,}", style="cyan"),
-    )
-
-    # Erfolgsraten pro Aktion
-    erfolgsraten: dict[int, float] = lern_status.get("erfolgsraten", {})
-    if erfolgsraten:
-        tabelle.add_row(Text(""), Text(""))
-        tabelle.add_row(
-            Text("Erfolgsraten:", style="bold underline"),
-            Text(""),
-        )
-        from .aktivitaet import AKTIONS_NAMEN
-
-        for aktion_id, rate in sorted(erfolgsraten.items()):
-            name: str = AKTIONS_NAMEN.get(aktion_id, f"Aktion {aktion_id}")
-            rate_farbe: str = "red" if rate < 0.3 else ("yellow" if rate < 0.6 else "green")
-            tabelle.add_row(
-                f"  {name}",
-                Text(f"{rate:.1%}", style=rate_farbe),
-            )
-
-    # Tode
-    tode: int = lern_status.get("anzahl_tode", 0)
+    # Tode gesamt
+    tode: int = status.get("tode_gesamt") or 0
     if tode > 0:
         tabelle.add_row(
-            "Tode erlebt",
+            "Tode gesamt",
             Text(f"{tode}", style="red bold"),
+        )
+    else:
+        tabelle.add_row(
+            "Tode gesamt",
+            Text("0", style="green"),
+        )
+
+    # Letzter Tod-Zustand
+    letzter_tod: Any = status.get("letzter_tod_zustand")
+    if isinstance(letzter_tod, dict) and letzter_tod:
+        tod_text: str = ", ".join(f"{k}={v}" for k, v in letzter_tod.items())
+        tabelle.add_row(
+            "Letzter Tod",
+            Text(tod_text, style="red"),
         )
 
     return Panel(tabelle, title="🧠 Lernen", border_style="magenta")

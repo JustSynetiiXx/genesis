@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import json
 import random
-import time
 from typing import Any
 
 from vm.config import (
@@ -189,61 +188,3 @@ def lerne(erfahrung: Erfahrung, kurzzeit: KurzzeitGedaechtnis,
             erfahrung.schmerz_delta,
             erfahrung.zeitstempel,
         )
-
-
-def lerne_aus_reflex(
-    zustand_bei_entscheidung: dict[str, str],
-    letzte_aktion: str,
-    zustand_bei_reflex: dict[str, str],
-    schmerz_bei_reflex: float,
-    kurzzeit: KurzzeitGedaechtnis,
-    langzeit: LangzeitGedaechtnis,
-) -> None:
-    """Erzeugt eine negative Erfahrung aus einem Reflex.
-
-    Wenn ein Reflex feuert, war die letzte bewusste Aktion offensichtlich
-    nicht gut genug — es wurde so schlimm dass der Körper eingreifen musste.
-
-    Speichert zwei Dinge:
-    1. Die letzte bewusste Aktion als negative Erfahrung (Kurzzeit + Langzeit)
-    2. Den Zustand beim Reflex als gefährlichen Zustand im Langzeitgedächtnis
-
-    Args:
-        zustand_bei_entscheidung: Zustand als die letzte bewusste Aktion gewählt wurde.
-        letzte_aktion: Die letzte bewusste Aktion (vor dem Reflex).
-        zustand_bei_reflex: Zustand zum Zeitpunkt des Reflexes.
-        schmerz_bei_reflex: Schmerzwert zum Zeitpunkt des Reflexes.
-        kurzzeit: Kurzzeitgedächtnis.
-        langzeit: Langzeitgedächtnis.
-    """
-    jetzt: float = time.time()
-
-    # 1. Letzte bewusste Aktion als negative Erfahrung speichern
-    #    schmerz_delta = aktueller Schmerz beim Reflex (immer positiv = schlecht)
-    erfahrung = Erfahrung(
-        zustand_vorher=zustand_bei_entscheidung,
-        aktion=letzte_aktion,
-        zustand_nachher=zustand_bei_reflex,
-        schmerz_vorher=0.0,  # Irrelevant, delta zählt
-        schmerz_nachher=schmerz_bei_reflex,
-        schmerz_delta=schmerz_bei_reflex,  # Positiv = Verschlechterung
-        zeitstempel=jetzt,
-    )
-    kurzzeit.speichere(erfahrung)
-
-    # Immer ins Langzeitgedächtnis — Reflex ist per Definition ein starkes Signal
-    langzeit.aktualisiere(
-        zustand_bei_entscheidung,
-        letzte_aktion,
-        schmerz_bei_reflex,
-        jetzt,
-    )
-
-    # 2. Reflex-Zustand als gefährlich markieren
-    #    "Nichts tun in diesem Zustand ist katastrophal"
-    langzeit.aktualisiere(
-        zustand_bei_reflex,
-        "nichts",
-        schmerz_bei_reflex,  # Hoher positiver Wert = sehr schlecht
-        jetzt,
-    )

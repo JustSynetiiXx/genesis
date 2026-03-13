@@ -28,7 +28,7 @@ from vm.config import (
 from vm.genesis.aktionen import AktionsManager
 from vm.genesis.gedaechtnis import Heartbeat, KurzzeitGedaechtnis, LangzeitGedaechtnis
 from vm.genesis.koerper import Koerper
-from vm.genesis.lernen import Erfahrung, lerne, lerne_aus_reflex, waehle_aktion
+from vm.genesis.lernen import Erfahrung, lerne, waehle_aktion
 from vm.genesis.reflexe import pruefe as pruefe_reflexe
 from vm.genesis.schmerz import berechne_schmerz, berechne_wohlbefinden, warnstufe
 from vm.genesis import schlaf as schlaf_modul
@@ -159,10 +159,6 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
     letzter_heartbeat: float = time.time()
     modus: str = "wachphase"
 
-    # Letzte bewusste Aktion tracken (für Reflex-Lernen)
-    letzte_bewusste_aktion: str | None = None
-    zustand_bei_letzter_entscheidung: dict[str, str] = {}
-
     try:
         # --- 2. Wachphase: Nur Fühlen, keine Aktionen ---
         logger.info("Wachphase: %d Sekunden nur Fühlen...", WACHPHASE_SEKUNDEN)
@@ -236,23 +232,6 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 for reflex in gefeuerte_reflexe:
                     aktionen.ausfuehren(reflex.aktion)
                     logger.debug("Reflex: %s → %s", reflex.name, reflex.aktion)
-
-                # Aus Reflex lernen: Die letzte bewusste Aktion war nicht gut genug
-                if letzte_bewusste_aktion is not None:
-                    lerne_aus_reflex(
-                        zustand_bei_letzter_entscheidung,
-                        letzte_bewusste_aktion,
-                        zustand["kategorien"],
-                        schmerz_wert,
-                        kurzzeit_db,
-                        langzeit_db,
-                    )
-                    logger.debug(
-                        "Reflex-Lernen: %s in Zustand %s war schlecht (Schmerz: %.2f)",
-                        letzte_bewusste_aktion,
-                        zustand_bei_letzter_entscheidung,
-                        schmerz_wert,
-                    )
             else:
                 # Entscheiden (Lernmechanismus)
                 aktion_name, exploration = waehle_aktion(
@@ -262,10 +241,6 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
 
                 # Handeln
                 aktionen.ausfuehren(aktion_name)
-
-                # Bewusste Aktion merken (für Reflex-Lernen)
-                letzte_bewusste_aktion = aktion_name
-                zustand_bei_letzter_entscheidung = zustand["kategorien"]
 
             # Natürlicher Verfall (immer, auch bei Reflex)
             aktionen.natuerlicher_verfall()
@@ -326,10 +301,7 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
     finally:
         # Aufräumen
         logger.info("Aufräumen...")
-        # Schlaf-Marker NUR überschreiben wenn wir NICHT sauber eingeschlafen sind
-        # (einschlafen() hat den Marker bereits korrekt auf True gesetzt)
-        if modus != "einschlafen":
-            heartbeat_db.aktualisiere(letzter_zustand, letzter_schmerz, schlaf_marker=False)
+        heartbeat_db.aktualisiere(letzter_zustand, letzter_schmerz, schlaf_marker=False)
         aktionen.stoppe()
         heartbeat_db.schliesse()
         langzeit_db.schliesse()

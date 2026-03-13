@@ -1,16 +1,78 @@
 """Verhaltens-Panel: Menschlich lesbare Interpretation.
 
-In Phase 0 zeigt dieses Panel nur einen Platzhalter.
-Vorbereitet für: Verhaltensmuster-Erkennung und Interpretation.
+Liest genesis_status.json aus dem Shared Directory und zeigt:
+- Warnstufe mit Farbcodierung, Schmerz, Wohlbefinden, Interpretation.
 """
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+
+
+# Pfad zur Genesis-Status-Datei
+_PROJEKT_WURZEL: Path = Path(__file__).resolve().parent.parent.parent.parent
+_STATUS_DATEI: Path = _PROJEKT_WURZEL / "shared" / "genesis_status.json"
+
+# Warnstufen → Farben
+WARNSTUFE_FARBEN: dict[str, str] = {
+    "komfort": "green",
+    "unbehagen": "yellow",
+    "stress": "dark_orange",
+    "gefahr": "red",
+    "kritisch": "red bold",
+}
+
+
+def _lese_status() -> dict[str, Any] | None:
+    """Liest genesis_status.json atomar.
+
+    Returns:
+        Status-Dictionary oder None wenn nicht lesbar.
+    """
+    try:
+        rohdaten: bytes = _STATUS_DATEI.read_bytes()
+        return json.loads(rohdaten)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return None
+
+
+def _interpretiere(status: dict[str, Any]) -> tuple[str, str]:
+    """Erzeugt menschlich lesbare Interpretation.
+
+    Args:
+        status: Genesis-Status-Dictionary.
+
+    Returns:
+        Tuple aus (Interpretation, Style).
+    """
+    schmerz: float = status.get("schmerz") or 0.0
+    exploration: bool = bool(status.get("exploration"))
+    aktion: str = status.get("aktion") or ""
+    modus: str = status.get("modus") or ""
+
+    # Reihenfolge ist wichtig — spezifischste Regel zuerst
+    if schmerz > 0.6 and exploration:
+        return "Es schreit", "red bold"
+    if aktion == "pausieren":
+        return "Es schläft", "blue"
+    if exploration and schmerz < 0.15:
+        return "Es lernt", "cyan"
+    if schmerz < 0.15 and not exploration:
+        return "Es ist zufrieden", "green"
+    if schmerz > 0.35 and exploration:
+        return "Es hat Angst", "dark_orange"
+    if not exploration:
+        return "Es erinnert sich", "magenta"
+    if modus == "wachphase":
+        return "Es ist aufgewacht", "yellow"
+
+    return "Es existiert", "dim"
 
 
 def erstelle_panel(
@@ -19,92 +81,44 @@ def erstelle_panel(
 ) -> Panel:
     """Erstellt das Verhaltens-Panel.
 
-    Interpretiert das Verhalten von Genesis in menschlich lesbarer Form.
-    WICHTIG: Ehrliche Interpretation. Erwartbares Verhalten wird als solches
-    gekennzeichnet. Nur wirklich überraschendes Verhalten wird hervorgehoben.
-
     Args:
-        genesis_status: Status-Dictionary von Genesis (Phase 1+).
-        lern_status: Lernstatus-Dictionary von Genesis (Phase 1+).
+        genesis_status: Wird ignoriert — liest direkt aus genesis_status.json.
+        lern_status: Wird ignoriert.
 
     Returns:
         Rich Panel mit Verhaltensinterpretation.
     """
-    if genesis_status is None:
-        # Phase 0: Genesis nicht aktiv
+    status: dict[str, Any] | None = _lese_status()
+
+    if status is None:
         inhalt = Table(show_header=False, box=None, expand=True, padding=(0, 1))
         inhalt.add_column("Info", ratio=1)
-
         inhalt.add_row(Text("Genesis nicht aktiv", style="dim"))
-        inhalt.add_row(Text(""))
-        inhalt.add_row(Text("Phase 0: Nur Sensoren und EKG", style="dim italic"))
-        inhalt.add_row(Text(""))
-        inhalt.add_row(Text("Vorbereitet für:", style="dim"))
-        inhalt.add_row(Text("  • Verhaltensmuster-Erkennung", style="dim"))
-        inhalt.add_row(Text("  • Menschlich lesbare Interpretation", style="dim"))
-        inhalt.add_row(Text("  • Erwartbar vs. überraschend", style="dim"))
-        inhalt.add_row(Text("  • Zeitlicher Verlauf", style="dim"))
-
         return Panel(inhalt, title="👁 Verhalten", border_style="dim")
 
-    # Phase 1+: Genesis aktiv — Verhalten interpretieren
+    # Genesis aktiv — Verhalten interpretieren
     tabelle = Table(show_header=False, box=None, expand=True, padding=(0, 1))
-    tabelle.add_column("Info", ratio=1)
+    tabelle.add_column("Bezeichnung", style="bold", width=16)
+    tabelle.add_column("Wert", ratio=1)
 
-    # Gesamtzustand
-    schmerz: float = genesis_status.get("schmerz", 0.0)
-    wohlbefinden: float = genesis_status.get("wohlbefinden", 0.0)
+    # Warnstufe
+    warnstufe: str = status.get("warnstufe") or "unbekannt"
+    warn_farbe: str = WARNSTUFE_FARBEN.get(warnstufe, "dim")
+    tabelle.add_row("Warnstufe", Text(warnstufe.upper(), style=warn_farbe))
 
-    if schmerz < 0.1 and wohlbefinden > 0.7:
-        zustand_text = Text("Zufrieden — Alles im Komfortbereich", style="green")
-    elif schmerz < 0.3:
-        zustand_text = Text("Ruhig — Geringer Stress", style="green")
-    elif schmerz < 0.6:
-        zustand_text = Text("Unruhig — Mittlerer Stress", style="yellow")
-    elif schmerz < 0.8:
-        zustand_text = Text("Gestresst — Hoher Schmerz", style="dark_orange")
-    else:
-        zustand_text = Text("Notfall — Kritischer Schmerz", style="red bold")
+    # Schmerz
+    schmerz: float = status.get("schmerz") or 0.0
+    schmerz_farbe: str = "green" if schmerz < 0.15 else ("yellow" if schmerz < 0.35 else ("dark_orange" if schmerz < 0.6 else "red"))
+    tabelle.add_row("Schmerz", Text(f"{schmerz:.4f}", style=schmerz_farbe))
 
-    tabelle.add_row(zustand_text)
-    tabelle.add_row(Text(""))
+    # Wohlbefinden
+    wohlbefinden: float = status.get("wohlbefinden") or 0.0
+    wohl_farbe: str = "red" if wohlbefinden < 0.3 else ("yellow" if wohlbefinden < 0.6 else "green")
+    tabelle.add_row("Wohlbefinden", Text(f"{wohlbefinden:.4f}", style=wohl_farbe))
 
-    # Aktuelle Aktivität interpretieren
-    aktuelle_aktion: int = genesis_status.get("aktuelle_aktion", 0)
-    interpretationen: dict[int, str] = {
-        1: "Passt Rechenintensität an",
-        2: "Verwaltet Speicher",
-        3: "Hat sich schlafen gelegt",
-        4: "Ändert wie oft es fühlt",
-        5: "Tut nichts — wartet ab",
-    }
-    interpretation: str = interpretationen.get(aktuelle_aktion, "Unbekannte Aktivität")
-    tabelle.add_row(Text(f"Aktuell: {interpretation}", style="cyan"))
-
-    # Explorationsverhalten
-    exploration: float = genesis_status.get("explorationsrate", 0.0)
-    if exploration > 0.7:
-        tabelle.add_row(Text(
-            "⚠ Hohe Exploration — probiert verzweifelt Neues",
-            style="yellow",
-        ))
-    elif exploration > 0.3:
-        tabelle.add_row(Text(
-            "Moderate Exploration — sucht nach besseren Strategien",
-            style="dim",
-        ))
-    else:
-        tabelle.add_row(Text(
-            "Niedrige Exploration — folgt bekannten Mustern",
-            style="dim",
-        ))
-
-    # Ehrlichkeitshinweis
-    tabelle.add_row(Text(""))
-    tabelle.add_row(Text(
-        "Hinweis: Alles oben ist erwartbares Verhalten, "
-        "direkt auf den Code zurückführbar.",
-        style="dim italic",
-    ))
+    # Menschlich lesbare Interpretation
+    interpretation, interp_style = _interpretiere(status)
+    tabelle.add_row(Text(""), Text(""))
+    tabelle.add_row("Interpretation", Text(interpretation, style=f"{interp_style} bold"))
 
     return Panel(tabelle, title="👁 Verhalten", border_style="blue")

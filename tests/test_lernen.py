@@ -11,6 +11,7 @@ from vm.genesis.gedaechtnis import Erfahrung, KurzzeitGedaechtnis, LangzeitGedae
 from vm.genesis.lernen import (
     exploration_wahrscheinlichkeit,
     lerne,
+    lerne_aus_reflex,
     lernsignal_staerke,
     waehle_aktion,
 )
@@ -156,3 +157,92 @@ class TestLerne:
         )
         lerne(erfahrung, kurzzeit, langzeit)
         assert langzeit.anzahl_gelernt() == 0
+
+
+class TestLerneAusReflex:
+    """Reflex-Lernen: Letzte bewusste Aktion als negative Erfahrung."""
+
+    def test_reflex_erzeugt_negative_erfahrung_in_kurzzeit(
+        self, kurzzeit: KurzzeitGedaechtnis, langzeit: LangzeitGedaechtnis
+    ) -> None:
+        """Wenn ein Reflex feuert, wird die letzte bewusste Aktion
+        als negative Erfahrung im Kurzzeitgedächtnis gespeichert."""
+        zustand_entscheidung = {"cpu_temp": "warm", "vm_ram": "normal"}
+        zustand_reflex = {"cpu_temp": "heiss", "vm_ram": "eng"}
+
+        lerne_aus_reflex(
+            zustand_bei_entscheidung=zustand_entscheidung,
+            letzte_aktion="rechenintensitaet_hoch",
+            zustand_bei_reflex=zustand_reflex,
+            schmerz_bei_reflex=0.75,
+            kurzzeit=kurzzeit,
+            langzeit=langzeit,
+        )
+
+        assert kurzzeit.anzahl() == 1
+        erfahrungen = kurzzeit.suche(zustand_entscheidung)
+        assert len(erfahrungen) == 1
+        assert erfahrungen[0].aktion == "rechenintensitaet_hoch"
+        assert erfahrungen[0].schmerz_delta == pytest.approx(0.75)
+
+    def test_reflex_speichert_in_langzeit(
+        self, kurzzeit: KurzzeitGedaechtnis, langzeit: LangzeitGedaechtnis
+    ) -> None:
+        """Reflex-Erfahrung wird immer im Langzeitgedächtnis gespeichert
+        (starkes Signal per Definition)."""
+        zustand_entscheidung = {"cpu_temp": "warm", "vm_ram": "normal"}
+        zustand_reflex = {"cpu_temp": "heiss", "vm_ram": "eng"}
+
+        lerne_aus_reflex(
+            zustand_bei_entscheidung=zustand_entscheidung,
+            letzte_aktion="rechenintensitaet_hoch",
+            zustand_bei_reflex=zustand_reflex,
+            schmerz_bei_reflex=0.75,
+            kurzzeit=kurzzeit,
+            langzeit=langzeit,
+        )
+
+        # Letzte Aktion negativ bewertet
+        gelernt = langzeit.suche(zustand_entscheidung)
+        assert len(gelernt) == 1
+        assert gelernt[0].aktion == "rechenintensitaet_hoch"
+        assert gelernt[0].durchschnitt_delta > 0  # Positiv = schlecht
+
+    def test_reflex_markiert_zustand_als_gefaehrlich(
+        self, kurzzeit: KurzzeitGedaechtnis, langzeit: LangzeitGedaechtnis
+    ) -> None:
+        """Der Zustand beim Reflex wird als gefährlich markiert:
+        'nichts tun' bekommt einen hohen positiven Delta."""
+        zustand_entscheidung = {"cpu_temp": "warm", "vm_ram": "normal"}
+        zustand_reflex = {"cpu_temp": "heiss", "vm_ram": "eng"}
+
+        lerne_aus_reflex(
+            zustand_bei_entscheidung=zustand_entscheidung,
+            letzte_aktion="rechenintensitaet_hoch",
+            zustand_bei_reflex=zustand_reflex,
+            schmerz_bei_reflex=0.75,
+            kurzzeit=kurzzeit,
+            langzeit=langzeit,
+        )
+
+        # Reflex-Zustand: "nichts" als schlecht gelernt
+        gelernt_reflex = langzeit.suche(zustand_reflex)
+        assert len(gelernt_reflex) == 1
+        assert gelernt_reflex[0].aktion == "nichts"
+        assert gelernt_reflex[0].durchschnitt_delta == pytest.approx(0.75)
+
+    def test_reflex_ohne_vorherige_aktion_kein_crash(
+        self, kurzzeit: KurzzeitGedaechtnis, langzeit: LangzeitGedaechtnis
+    ) -> None:
+        """Sicherstellen dass die Funktion mit beliebigen Zuständen funktioniert."""
+        lerne_aus_reflex(
+            zustand_bei_entscheidung={},
+            letzte_aktion="nichts",
+            zustand_bei_reflex={"vm_ram": "kritisch"},
+            schmerz_bei_reflex=0.9,
+            kurzzeit=kurzzeit,
+            langzeit=langzeit,
+        )
+        assert kurzzeit.anzahl() == 1
+        # 2 Langzeit-Einträge: leerer Zustand + Reflex-Zustand
+        assert langzeit.anzahl_gelernt() == 2
