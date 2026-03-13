@@ -25,6 +25,9 @@ from vm.config import (
     STATUS_DATEI,
     WACHPHASE_SEKUNDEN,
 )
+
+LOG_DATEI_NAME: str = "genesis_log.txt"
+LOG_MAX_ZEILEN: int = 500
 from vm.genesis.aktionen import AktionsManager
 from vm.genesis.gedaechtnis import Heartbeat, KurzzeitGedaechtnis, LangzeitGedaechtnis
 from vm.genesis.koerper import Koerper
@@ -38,6 +41,39 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger("genesis")
+
+
+class _DateiLogHandler(logging.Handler):
+    """Schreibt INFO-Logs in eine Datei, begrenzt auf LOG_MAX_ZEILEN."""
+
+    def __init__(self, pfad: Path) -> None:
+        super().__init__(level=logging.INFO)
+        self._pfad: Path = pfad
+        self._pfad.parent.mkdir(parents=True, exist_ok=True)
+        self.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            zeile: str = self.format(record) + "\n"
+            # Append
+            with open(self._pfad, "a", encoding="utf-8") as f:
+                f.write(zeile)
+            # Kürzen wenn zu lang
+            self._kuerze()
+        except Exception:
+            self.handleError(record)
+
+    def _kuerze(self) -> None:
+        """Hält die Datei auf maximal LOG_MAX_ZEILEN."""
+        try:
+            zeilen: list[str] = self._pfad.read_text(encoding="utf-8").splitlines()
+            if len(zeilen) > LOG_MAX_ZEILEN:
+                self._pfad.write_text(
+                    "\n".join(zeilen[-LOG_MAX_ZEILEN:]) + "\n",
+                    encoding="utf-8",
+                )
+        except OSError:
+            pass
 
 
 def _schreibe_status(status_pfad: Path, zustand: dict[str, Any],
@@ -113,6 +149,11 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
     sensor_pfad: Path = shared / "sensoren.bin"
     signal_pfad: Path = shared / SIGNAL_DATEI
     status_pfad: Path = shared / STATUS_DATEI
+    log_pfad: Path = shared / LOG_DATEI_NAME
+
+    # Log-Handler für Datei registrieren
+    datei_handler: _DateiLogHandler = _DateiLogHandler(log_pfad)
+    logger.addHandler(datei_handler)
 
     # --- Komponenten initialisieren ---
     koerper: Koerper = Koerper(sensor_pfad)

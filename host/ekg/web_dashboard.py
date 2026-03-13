@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
+import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from typing import Any
@@ -23,6 +25,8 @@ _PROJEKT_WURZEL: Path = Path(__file__).resolve().parent.parent.parent
 _STATUS_DATEI: Path = _PROJEKT_WURZEL / "shared" / "genesis_status.json"
 _SENSOR_DATEI: Path = _PROJEKT_WURZEL / "shared" / "sensoren.bin"
 _LESER_PFAD: Path = _PROJEKT_WURZEL / "shared" / "leser.py"
+_LOG_DATEI: Path = _PROJEKT_WURZEL / "shared" / "genesis_log.txt"
+_SIGNAL_DATEI: Path = _PROJEKT_WURZEL / "shared" / "signal.txt"
 
 # Sensor-Leser importieren
 _leser_modul: Any = None
@@ -58,6 +62,44 @@ def _lese_sensoren() -> dict[str, Any] | None:
     return leser.lese_sensoren(_SENSOR_DATEI)
 
 
+def _lese_logs(n: int = 50) -> list[str]:
+    """Liest die letzten n Log-Zeilen aus genesis_log.txt."""
+    try:
+        zeilen: list[str] = _LOG_DATEI.read_text(encoding="utf-8").splitlines()
+        # Neueste zuerst
+        return list(reversed(zeilen[-n:]))
+    except (FileNotFoundError, OSError):
+        return []
+
+
+def _schreibe_signal(signal_text: str) -> None:
+    """Schreibt ein Signal in signal.txt."""
+    _SIGNAL_DATEI.parent.mkdir(parents=True, exist_ok=True)
+    _SIGNAL_DATEI.write_text(signal_text + "\n", encoding="utf-8")
+
+
+def _genesis_lebt() -> str:
+    """Prüft ob Genesis lebt. Gibt 'lebt', 'schlaeft' oder 'tot' zurück."""
+    # Schlaf-Signal prüfen
+    try:
+        signal_inhalt: str = _SIGNAL_DATEI.read_text(encoding="utf-8").strip()
+        if signal_inhalt.startswith("SLEEP"):
+            return "schlaeft"
+    except (FileNotFoundError, OSError):
+        pass
+
+    # Status-Zeitstempel prüfen
+    status: dict[str, Any] | None = _lese_genesis_status()
+    if status is None:
+        return "tot"
+    alter: float = time.time() - status.get("zeitstempel", 0)
+    if alter < 5:
+        return "lebt"
+    if alter < 30:
+        return "schlaeft"
+    return "tot"
+
+
 def _api_daten() -> dict[str, Any]:
     """Kombiniert Genesis-Status und Sensordaten für die API."""
     status = _lese_genesis_status()
@@ -65,6 +107,7 @@ def _api_daten() -> dict[str, Any]:
     return {
         "genesis": status,
         "sensoren": sensoren,
+        "genesis_status": _genesis_lebt(),
     }
 
 
@@ -171,10 +214,88 @@ body {
     font-size: 12px;
     padding-top: 6px;
 }
+/* Steuerung */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+.controls button {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 14px;
+    border: 1px solid #555;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #2a2a2a;
+    color: #ccc;
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+    transition: background 0.2s, color 0.2s;
+}
+.controls button:active { transform: scale(0.95); }
+.btn-sleep { border-color: #888800; color: #ffff00; }
+.btn-sleep:hover { background: #3a3a00; }
+.btn-sleep.active { background: #555500; color: #ffff00; }
+.btn-sleep.done { background: #333; color: #666; }
+.btn-wake { border-color: #008800; color: #00ff00; }
+.btn-wake:hover { background: #003a00; }
+.btn-wake.active { background: #005500; color: #00ff00; }
+.btn-restart { border-color: #884400; color: #ff8800; }
+.btn-restart:hover { background: #3a2200; }
+.btn-restart.active { background: #553300; color: #ff8800; }
+.btn-good { border-color: #008800; color: #00ff00; }
+.btn-good:hover { background: #003a00; }
+.btn-bad { border-color: #880000; color: #ff4444; }
+.btn-bad:hover { background: #3a0000; }
+.btn-flash-green { background: #005500 !important; color: #00ff00 !important; }
+.btn-flash-red { background: #550000 !important; color: #ff4444 !important; }
+.status-indicator {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-left: auto;
+    white-space: nowrap;
+}
+.status-lebt { color: #00ff00; }
+.status-schlaeft { color: #ffff00; }
+.status-tot { color: #ff4444; }
+/* Logs */
+.log-panel {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #00cc00;
+}
+.log-panel .section-title { margin-bottom: 6px; }
+.log-line { white-space: pre-wrap; word-break: break-all; }
 </style>
 </head>
 <body>
+<div class="controls" id="controls">
+    <button class="btn-sleep" id="btn-sleep" onclick="sendSignal('sleep')">Gute Nacht</button>
+    <button class="btn-wake" id="btn-wake" onclick="sendSignal('wake')">Aufwecken</button>
+    <button class="btn-restart" id="btn-restart" onclick="sendSignal('restart')">Neustart</button>
+    <button class="btn-good" id="btn-good" onclick="sendSignal('good')">Gut</button>
+    <button class="btn-bad" id="btn-bad" onclick="sendSignal('bad')">Schlecht</button>
+    <span class="status-indicator" id="status-ind">...</span>
+</div>
 <div id="content"><div class="offline">Verbinde...</div></div>
+<div class="log-panel" id="log-panel">
+    <div class="section-title">Logs</div>
+    <div id="log-content"></div>
+</div>
 <div class="timestamp" id="ts"></div>
 <script>
 function farbeFuerWert(wert, schwellen) {
@@ -325,18 +446,100 @@ function render(daten) {
     el.innerHTML = h;
 }
 
+var _restartPhase = 0; // 0=idle, 1=sleeping, 2=waking
+
+function aktualisiereStatus(gStatus) {
+    var ind = document.getElementById('status-ind');
+    var labels = {'lebt': 'Genesis lebt', 'schlaeft': 'Genesis schläft', 'tot': 'Genesis ist tot'};
+    ind.textContent = labels[gStatus] || '?';
+    ind.className = 'status-indicator status-' + gStatus;
+}
+
+function sendSignal(typ) {
+    var url = '';
+    if (typ === 'sleep') url = '/api/signal/sleep';
+    else if (typ === 'wake') url = '/api/control/wake';
+    else if (typ === 'restart') url = '/api/control/restart';
+    else if (typ === 'good') url = '/api/signal/good';
+    else if (typ === 'bad') url = '/api/signal/bad';
+
+    // Visuelles Feedback
+    if (typ === 'good') {
+        var bg = document.getElementById('btn-good');
+        bg.classList.add('btn-flash-green');
+        setTimeout(function() { bg.classList.remove('btn-flash-green'); }, 500);
+    } else if (typ === 'bad') {
+        var bb = document.getElementById('btn-bad');
+        bb.classList.add('btn-flash-red');
+        setTimeout(function() { bb.classList.remove('btn-flash-red'); }, 500);
+    } else if (typ === 'sleep') {
+        document.getElementById('btn-sleep').classList.add('active');
+        setTimeout(function() {
+            document.getElementById('btn-sleep').classList.remove('active');
+            document.getElementById('btn-sleep').classList.add('done');
+        }, 10000);
+    } else if (typ === 'wake') {
+        document.getElementById('btn-wake').classList.add('active');
+        setTimeout(function() { document.getElementById('btn-wake').classList.remove('active'); }, 5000);
+    } else if (typ === 'restart') {
+        _restartPhase = 1;
+        var rb = document.getElementById('btn-restart');
+        rb.classList.add('active');
+        rb.textContent = 'Einschlafen...';
+        setTimeout(function() {
+            rb.textContent = 'Aufwecken...';
+            _restartPhase = 2;
+            fetch('/api/control/wake', {method: 'POST'}).then(function() {
+                setTimeout(function() {
+                    rb.classList.remove('active');
+                    rb.textContent = 'Neustart';
+                    _restartPhase = 0;
+                }, 3000);
+            });
+        }, 10000);
+    }
+
+    fetch(url, {method: 'POST'});
+}
+
+function aktualisiereLogPanel() {
+    fetch('/api/logs')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var el = document.getElementById('log-content');
+            if (!d.logs || d.logs.length === 0) {
+                el.innerHTML = '<div class="log-line c-dim">Keine Logs vorhanden</div>';
+                return;
+            }
+            var h = '';
+            for (var i = 0; i < d.logs.length; i++) {
+                h += '<div class="log-line">' + d.logs[i].replace(/</g, '&lt;') + '</div>';
+            }
+            el.innerHTML = h;
+        })
+        .catch(function() {});
+}
+
 function aktualisiere() {
     fetch('/api/status')
         .then(function(r) { return r.json(); })
         .then(function(d) {
             render(d);
+            aktualisiereStatus(d.genesis_status || 'tot');
             document.getElementById('ts').textContent =
                 new Date().toLocaleTimeString('de-DE');
+            // Sleep-Button zurücksetzen wenn Genesis wieder lebt
+            if (d.genesis_status === 'lebt') {
+                document.getElementById('btn-sleep').classList.remove('done');
+                document.getElementById('btn-sleep').textContent = 'Gute Nacht';
+            }
         })
         .catch(function() {
             document.getElementById('content').innerHTML =
                 '<div class="offline">Verbindung verloren...</div>';
+            aktualisiereStatus('tot');
         });
+    aktualisiereLogPanel();
 }
 
 aktualisiere();
@@ -353,9 +556,54 @@ class GenesisHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         """Behandelt GET-Anfragen."""
         if self.path == "/api/status":
-            self._sende_json()
+            self._sende_json(_api_daten())
+        elif self.path == "/api/logs":
+            self._sende_json({"logs": _lese_logs(50)})
         else:
             self._sende_html()
+
+    def do_POST(self) -> None:
+        """Behandelt POST-Anfragen für Steuerung."""
+        antwort: dict[str, Any] = {"ok": False, "fehler": "Unbekannter Endpunkt"}
+
+        if self.path == "/api/signal/sleep":
+            _schreibe_signal(f"SLEEP {time.time():.0f}")
+            antwort = {"ok": True, "aktion": "sleep"}
+
+        elif self.path == "/api/signal/good":
+            _schreibe_signal("GOOD")
+            antwort = {"ok": True, "aktion": "good"}
+
+        elif self.path == "/api/signal/bad":
+            _schreibe_signal("BAD")
+            antwort = {"ok": True, "aktion": "bad"}
+
+        elif self.path == "/api/control/wake":
+            # Prüfe ob Genesis bereits lebt
+            if _genesis_lebt() == "lebt":
+                antwort = {"ok": False, "fehler": "Genesis läuft bereits"}
+            else:
+                # Signal-Datei löschen falls SLEEP drin steht
+                try:
+                    _SIGNAL_DATEI.unlink(missing_ok=True)
+                except OSError:
+                    pass
+                subprocess.Popen(
+                    [sys.executable, "-m", "vm.genesis.leben"],
+                    env={**__import__("os").environ, "PYTHONPATH": "/opt/genesis"},
+                    cwd="/opt/genesis",
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    start_new_session=True,
+                )
+                antwort = {"ok": True, "aktion": "wake"}
+
+        elif self.path == "/api/control/restart":
+            # Erst SLEEP, dann wird der Client nach 10s /api/control/wake aufrufen
+            _schreibe_signal(f"SLEEP {time.time():.0f}")
+            antwort = {"ok": True, "aktion": "restart"}
+
+        self._sende_json(antwort)
 
     def _sende_html(self) -> None:
         """Sendet die Dashboard-HTML-Seite."""
@@ -366,9 +614,8 @@ class GenesisHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(inhalt)
 
-    def _sende_json(self) -> None:
-        """Sendet den aktuellen Status als JSON."""
-        daten: dict[str, Any] = _api_daten()
+    def _sende_json(self, daten: dict[str, Any]) -> None:
+        """Sendet JSON-Daten."""
         inhalt: bytes = json.dumps(daten, ensure_ascii=False).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "application/json; charset=utf-8")
