@@ -16,6 +16,7 @@ import json
 import subprocess
 import sys
 import time
+from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from typing import Any
@@ -254,6 +255,8 @@ body {
 .btn-bad:hover { background: #3a0000; }
 .btn-flash-green { background: #005500 !important; color: #00ff00 !important; }
 .btn-flash-red { background: #550000 !important; color: #ff4444 !important; }
+.btn-export { border-color: #446688; color: #88bbdd; }
+.btn-export:hover { background: #1a2a3a; }
 .status-indicator {
     font-size: 14px;
     font-weight: bold;
@@ -289,6 +292,7 @@ body {
     <button class="btn-restart" id="btn-restart" onclick="sendSignal('restart')">Neustart</button>
     <button class="btn-good" id="btn-good" onclick="sendSignal('good')">Gut</button>
     <button class="btn-bad" id="btn-bad" onclick="sendSignal('bad')">Schlecht</button>
+    <button class="btn-export" id="btn-export" onclick="exportLogs()">Logs exportieren</button>
     <span class="status-indicator" id="status-ind">...</span>
 </div>
 <div id="content"><div class="offline">Verbinde...</div></div>
@@ -520,6 +524,28 @@ function aktualisiereLogPanel() {
         .catch(function() {});
 }
 
+function exportLogs() {
+    var now = new Date();
+    var ts = now.getFullYear()
+        + String(now.getMonth() + 1).padStart(2, '0')
+        + String(now.getDate()).padStart(2, '0')
+        + '_'
+        + String(now.getHours()).padStart(2, '0')
+        + String(now.getMinutes()).padStart(2, '0')
+        + String(now.getSeconds()).padStart(2, '0');
+    var filename = 'genesis_log_' + ts + '.txt';
+    fetch('/api/logs/export')
+        .then(function(r) { return r.blob(); })
+        .then(function(blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+}
+
 function aktualisiere() {
     fetch('/api/status')
         .then(function(r) { return r.json(); })
@@ -559,6 +585,8 @@ class GenesisHandler(BaseHTTPRequestHandler):
             self._sende_json(_api_daten())
         elif self.path == "/api/logs":
             self._sende_json({"logs": _lese_logs(50)})
+        elif self.path == "/api/logs/export":
+            self._sende_log_export()
         else:
             self._sende_html()
 
@@ -621,6 +649,27 @@ class GenesisHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(inhalt)))
         self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(inhalt)
+
+    def _sende_log_export(self) -> None:
+        """Sendet die komplette Log-Datei als Download."""
+        log_pfad: Path = Path("/opt/genesis/shared/genesis_log.txt")
+        zeitstempel: str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        dateiname: str = f"genesis_log_{zeitstempel}.txt"
+
+        try:
+            if log_pfad.exists():
+                inhalt: bytes = log_pfad.read_bytes()
+            else:
+                inhalt = "Keine Logs vorhanden\n".encode("utf-8")
+        except OSError:
+            inhalt = "Keine Logs vorhanden\n".encode("utf-8")
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Disposition", f'attachment; filename="{dateiname}"')
+        self.send_header("Content-Length", str(len(inhalt)))
         self.end_headers()
         self.wfile.write(inhalt)
 
