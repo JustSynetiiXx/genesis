@@ -33,7 +33,7 @@ from vm.genesis.gedaechtnis import Heartbeat, KurzzeitGedaechtnis, LangzeitGedae
 from vm.genesis.koerper import Koerper
 from vm.genesis.lernen import Erfahrung, lerne, lerne_aus_reflex, waehle_aktion
 from vm.genesis.reflexe import pruefe as pruefe_reflexe
-from vm.genesis.schmerz import berechne_schmerz, berechne_wohlbefinden, warnstufe
+from vm.genesis.schmerz import berechne_schmerz, berechne_schmerz_details, berechne_wohlbefinden, warnstufe
 from vm.genesis import schlaf as schlaf_modul
 
 logging.basicConfig(
@@ -83,7 +83,8 @@ def _schreibe_status(status_pfad: Path, zustand: dict[str, Any],
                      aktions_manager: AktionsManager,
                      erfahrungen_heute: int, erfahrungen_langzeit: int,
                      tode_gesamt: int, letzter_tod: dict[str, Any] | None,
-                     wach_seit: int, modus: str) -> None:
+                     wach_seit: int, modus: str,
+                     schmerz_details: dict[str, Any] | None = None) -> None:
     """Schreibt den Genesis-Status als JSON für das EKG.
 
     Atomares Schreiben: temp-Datei → rename.
@@ -109,6 +110,7 @@ def _schreibe_status(status_pfad: Path, zustand: dict[str, Any],
         ),
         "wach_seit": wach_seit,
         "modus": modus,
+        "schmerz_details": schmerz_details,
     }
 
     try:
@@ -232,12 +234,14 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 letzter_heartbeat = jetzt
 
             # Status für EKG
+            details = berechne_schmerz_details(zustand["rohwerte"])
             _schreibe_status(
                 status_pfad, zustand, schmerz_wert, wohlbefinden_wert,
                 stufe, None, bool(gefeuerte_reflexe), False,
                 aktionen, kurzzeit_db.anzahl(), langzeit_db.anzahl_gelernt(),
                 langzeit_db.anzahl_tode(), langzeit_db.letzter_tod(),
                 wach_seit, modus,
+                schmerz_details=details,
             )
 
             vorheriger_schmerz = schmerz_wert
@@ -342,12 +346,14 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 letzter_heartbeat = jetzt
 
             # Status für EKG
+            details = berechne_schmerz_details(zustand["rohwerte"])
             _schreibe_status(
                 status_pfad, zustand, schmerz_wert, wohlbefinden_wert,
                 stufe, aktion_name, reflex_aktiv, exploration,
                 aktionen, kurzzeit_db.anzahl(), langzeit_db.anzahl_gelernt(),
                 langzeit_db.anzahl_tode(), langzeit_db.letzter_tod(),
                 wach_seit, modus,
+                schmerz_details=details,
             )
 
             vorheriger_schmerz = schmerz_wert

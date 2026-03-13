@@ -283,6 +283,54 @@ body {
 }
 .log-panel .section-title { margin-bottom: 6px; }
 .log-line { white-space: pre-wrap; word-break: break-all; }
+/* Körper-Details Panel */
+.sensor-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #222;
+}
+.sensor-row:last-child { border-bottom: none; }
+.sensor-name {
+    flex: 0 0 110px;
+    font-size: 13px;
+    color: #aaa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sensor-wert {
+    flex: 0 0 70px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: right;
+}
+.sensor-kat {
+    flex: 0 0 70px;
+    font-size: 12px;
+    text-align: center;
+    color: #888;
+}
+.sensor-bar-wrap {
+    flex: 1;
+    background: #333;
+    border-radius: 4px;
+    height: 14px;
+    overflow: hidden;
+    min-width: 40px;
+}
+.sensor-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+.sensor-beitrag {
+    flex: 0 0 50px;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: right;
+}
 </style>
 </head>
 <body>
@@ -446,6 +494,58 @@ function render(daten) {
     h += '<div class="row"><span class="label">Host CPU</span><span class="value ' +
         farbeFuerWert(hostCpu, [50, 75, 90]) + '">' + hostCpu.toFixed(1) + '%</span></div>';
     h += '</div>';
+
+    // Körper-Details Panel
+    var sd = g.schmerz_details;
+    if (sd) {
+        h += '<div class="section">';
+        h += '<div class="section-title">Körper-Details</div>';
+        // In Array umwandeln und nach Beitrag sortieren (höchster oben)
+        var sensorArr = [];
+        var sensorLabels = {
+            'cpu_temp_tctl': 'CPU Temp',
+            'vm_ram_frei_mb': 'VM RAM frei',
+            'eigen_ram_mb': 'Eigen RAM',
+            'eigen_cpu_prozent': 'Eigen CPU',
+            'host_cpu_last': 'Host CPU',
+            'luefter_rpm': 'Lüfter'
+        };
+        var sensorEinheiten = {
+            'cpu_temp_tctl': '°C',
+            'vm_ram_frei_mb': ' MB',
+            'eigen_ram_mb': ' MB',
+            'eigen_cpu_prozent': '%',
+            'host_cpu_last': '%',
+            'luefter_rpm': ' RPM'
+        };
+        for (var key in sd) {
+            sensorArr.push({name: key, label: sensorLabels[key] || key, einheit: sensorEinheiten[key] || '', d: sd[key]});
+        }
+        sensorArr.sort(function(a, b) { return (b.d.beitrag || 0) - (a.d.beitrag || 0); });
+        for (var si = 0; si < sensorArr.length; si++) {
+            var s = sensorArr[si];
+            var beitrag = s.d.beitrag || 0;
+            var bFarbe;
+            if (beitrag <= 0) bFarbe = '#00ff00';
+            else if (beitrag <= 0.1) bFarbe = '#ffff00';
+            else if (beitrag <= 0.3) bFarbe = '#ff8800';
+            else bFarbe = '#ff4444';
+            var bPct = Math.min(100, beitrag * 333);
+            var bClass;
+            if (beitrag <= 0) bClass = 'c-green';
+            else if (beitrag <= 0.1) bClass = 'c-yellow';
+            else if (beitrag <= 0.3) bClass = 'c-orange';
+            else bClass = 'c-red';
+            h += '<div class="sensor-row">';
+            h += '<span class="sensor-name">' + s.label + '</span>';
+            h += '<span class="sensor-wert" style="color:' + bFarbe + '">' + (s.d.rohwert || 0).toFixed(1) + s.einheit + '</span>';
+            h += '<span class="sensor-kat">' + (s.d.kategorie || '?') + '</span>';
+            h += '<div class="sensor-bar-wrap"><div class="sensor-bar-fill" style="width:' + bPct + '%;background:' + bFarbe + '"></div></div>';
+            h += '<span class="sensor-beitrag ' + bClass + '">' + beitrag.toFixed(3) + '</span>';
+            h += '</div>';
+        }
+        h += '</div>';
+    }
 
     el.innerHTML = h;
 }

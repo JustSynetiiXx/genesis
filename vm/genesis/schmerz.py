@@ -105,6 +105,98 @@ def berechne_schmerz(rohwerte: dict[str, float]) -> float:
     return max(0.0, min(1.0, gesamt))
 
 
+def _sensor_kategorie(sensor_name: str, wert: float) -> str:
+    """Bestimmt die Zustandskategorie eines Sensors anhand seines Rohwerts.
+
+    Args:
+        sensor_name: Name des Sensors (Key in SCHMERZ_CONFIG).
+        wert: Aktueller Rohwert.
+
+    Returns:
+        Menschlich lesbare Kategorie.
+    """
+    if sensor_name == "cpu_temp_tctl":
+        if wert < 45.0:
+            return "kühl"
+        if wert < 60.0:
+            return "normal"
+        if wert < 75.0:
+            return "warm"
+        if wert < 85.0:
+            return "heiß"
+        return "kritisch"
+    elif sensor_name == "vm_ram_frei_mb":
+        if wert > 500.0:
+            return "frei"
+        if wert > 200.0:
+            return "normal"
+        if wert > 50.0:
+            return "eng"
+        return "voll"
+    elif sensor_name == "eigen_cpu_prozent":
+        if wert < 30.0:
+            return "niedrig"
+        if wert < 60.0:
+            return "normal"
+        if wert < 90.0:
+            return "hoch"
+        return "überlastet"
+    elif sensor_name == "eigen_ram_mb":
+        if wert < 100.0:
+            return "niedrig"
+        if wert < 300.0:
+            return "normal"
+        if wert < 600.0:
+            return "hoch"
+        return "kritisch"
+    elif sensor_name == "host_cpu_last":
+        if wert < 30.0:
+            return "niedrig"
+        if wert < 60.0:
+            return "normal"
+        if wert < 90.0:
+            return "hoch"
+        return "überlastet"
+    elif sensor_name == "luefter_rpm":
+        if wert < 1200.0:
+            return "leise"
+        if wert < 2000.0:
+            return "normal"
+        if wert < 3000.0:
+            return "laut"
+        return "maximum"
+    return "unbekannt"
+
+
+def berechne_schmerz_details(rohwerte: dict[str, float]) -> dict[str, dict[str, Any]]:
+    """Berechnet den Schmerzbeitrag pro Sensor mit Rohwert und Kategorie.
+
+    Args:
+        rohwerte: Dictionary mit Sensor-Rohwerten.
+
+    Returns:
+        Dictionary mit pro Sensor: rohwert, beitrag (gewichtet), kategorie.
+    """
+    details: dict[str, dict[str, Any]] = {}
+
+    for sensor_name, config in SCHMERZ_CONFIG.items():
+        wert: float = rohwerte.get(sensor_name, 0.0)
+        roh_beitrag: float = _schmerz_beitrag(
+            wert,
+            config["komfort"],
+            config["maximum"],
+            config["invertiert"],
+        )
+        gewichteter_beitrag: float = roh_beitrag * config["gewicht"]
+        details[sensor_name] = {
+            "rohwert": round(wert, 2),
+            "beitrag": round(gewichteter_beitrag, 4),
+            "kategorie": _sensor_kategorie(sensor_name, wert),
+        }
+
+    return details
+
+
 def berechne_wohlbefinden(aktueller_schmerz: float, vorheriger_schmerz: float) -> float:
     """Berechnet Wohlbefinden basierend auf Schmerzveränderung.
 
