@@ -21,9 +21,9 @@ SCHMERZ_CONFIG: dict[str, dict[str, Any]] = {
         "invertiert": False,
     },
     "vm_ram_frei_mb": {
-        "komfort": 500.0,
-        "maximum": 10.0,
-        "gewicht": 0.30,
+        "komfort": 3500.0,
+        "maximum": 500.0,
+        "gewicht": 0.10,
         "invertiert": True,  # Weniger frei = mehr Schmerz
     },
     "eigen_cpu_prozent": {
@@ -34,8 +34,8 @@ SCHMERZ_CONFIG: dict[str, dict[str, Any]] = {
     },
     "eigen_ram_mb": {
         "komfort": 100.0,
-        "maximum": 800.0,
-        "gewicht": 0.15,
+        "maximum": 1000.0,
+        "gewicht": 0.40,
         "invertiert": False,
     },
     "host_cpu_last": {
