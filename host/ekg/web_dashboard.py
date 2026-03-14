@@ -16,8 +16,9 @@ import json
 import sqlite3
 import subprocess
 import sys
+import threading
 import time
-from datetime import datetime
+from datetime import datetime, date
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,8 @@ _STATUS_DATEI: Path = _PROJEKT_WURZEL / "shared" / "genesis_status.json"
 _SENSOR_DATEI: Path = _PROJEKT_WURZEL / "shared" / "sensoren.bin"
 _LESER_PFAD: Path = _PROJEKT_WURZEL / "shared" / "leser.py"
 _LOG_DATEI: Path = _PROJEKT_WURZEL / "shared" / "genesis_log.txt"
+_LOG_DATEI_PROD: Path = Path("/opt/genesis/shared/genesis_log.txt")
+_LOG_VERZEICHNIS: Path = Path("/opt/genesis/shared")
 _SIGNAL_DATEI: Path = _PROJEKT_WURZEL / "shared" / "signal.txt"
 
 # DB-Pfade (Read-Only Zugriff!)
@@ -269,18 +272,106 @@ def _api_phasen() -> dict[str, Any]:
     }
 
 
+def _lade_config() -> dict[str, Any]:
+    """Lädt Config-Werte aus vm.config."""
+    try:
+        from vm import config as cfg
+        return {
+            "loop_intervall": cfg.LOOP_INTERVALL,
+            "wachphase_sekunden": cfg.WACHPHASE_SEKUNDEN,
+            "verfall_mb_pro_tick": cfg.VERFALL_MB_PRO_TICK,
+            "lernschwelle_stark": cfg.LERNSCHWELLE_STARK,
+            "lernschwelle_mittel": cfg.LERNSCHWELLE_MITTEL,
+            "wiederholungen_mittel": cfg.WIEDERHOLUNGEN_MITTEL,
+            "wiederholungen_schwach": cfg.WIEDERHOLUNGEN_SCHWACH,
+            "cache_max_mb": cfg.CACHE_MAX_MB,
+            "abtastrate_min": cfg.ABTASTRATE_MIN,
+            "abtastrate_max": cfg.ABTASTRATE_MAX,
+            "rechen_stufe": cfg.RECHEN_STUFE,
+            "pause_min_sekunden": cfg.PAUSE_MIN_SEKUNDEN,
+            "pause_max_sekunden": cfg.PAUSE_MAX_SEKUNDEN,
+        }
+    except ImportError:
+        return {"fehler": "vm.config nicht verfügbar"}
+
+
 def _api_export() -> dict[str, Any]:
-    """Komplett-Dump aller Daten als JSON."""
+    """Komplett-Dump aller Daten als JSON für externe Analyse."""
+    tode = _api_tode()
     return {
-        "zeitstempel": time.time(),
-        "export_datum": datetime.now().isoformat(),
-        "status": _api_daten(),
-        "langzeit": _api_langzeit(),
-        "tode": _api_tode(),
-        "kurzzeit_stats": _api_kurzzeit_stats(),
-        "phasen": _api_phasen(),
+        "export_zeitstempel": datetime.now().isoformat(),
+        "genesis_version": "Phase 2 — Beobachtung",
+        "aktueller_status": _api_daten(),
+        "langzeit_gedaechtnis": _api_langzeit(),
+        "tod_historie": {
+            "ereignisse": tode["tode"],
+            "gesamt_tode": tode["gesamt_tode"],
+            "gesamt_schlaf": tode["gesamt_schlaf"],
+        },
+        "kurzzeit_statistik": _api_kurzzeit_stats(),
+        "phasen_status": _api_phasen(),
+        "config": _lade_config(),
         "logs": _lese_logs(200),
     }
+
+
+def _api_logs_archiv() -> dict[str, Any]:
+    """Listet alle archivierten Log-Dateien auf."""
+    archive: list[dict[str, Any]] = []
+    try:
+        for datei in sorted(_LOG_VERZEICHNIS.glob("genesis_log_????-??-??.txt"), reverse=True):
+            datum = datei.stem.replace("genesis_log_", "")
+            groesse_kb = datei.stat().st_size / 1024
+            archive.append({
+                "datum": datum,
+                "datei": datei.name,
+                "groesse_kb": round(groesse_kb, 1),
+            })
+    except OSError:
+        pass
+    return {"archive": archive}
+
+
+# --- Log-Rotation ---
+
+_letztes_rotations_datum: str = ""
+
+
+def _rotiere_logs() -> None:
+    """Rotiert genesis_log.txt zu genesis_log_YYYY-MM-DD.txt bei Mitternacht."""
+    global _letztes_rotations_datum
+    heute = date.today().isoformat()
+    if _letztes_rotations_datum == heute:
+        return
+    _letztes_rotations_datum = heute
+    # Prüfe ob es eine Log-Datei gibt die rotiert werden muss
+    log_pfad = _LOG_DATEI_PROD
+    if not log_pfad.exists() or log_pfad.stat().st_size == 0:
+        return
+    # Datum der letzten Änderung der Log-Datei
+    from datetime import date as date_cls
+    letztes_datum = date_cls.fromtimestamp(log_pfad.stat().st_mtime)
+    if letztes_datum >= date.today():
+        return  # Log ist von heute, noch nicht rotieren
+    archiv_name = f"genesis_log_{letztes_datum.isoformat()}.txt"
+    archiv_pfad = _LOG_VERZEICHNIS / archiv_name
+    if archiv_pfad.exists():
+        return  # Archiv für diesen Tag existiert bereits
+    try:
+        log_pfad.rename(archiv_pfad)
+        log_pfad.write_text("", encoding="utf-8")
+    except OSError:
+        pass
+
+
+def _log_rotation_thread() -> None:
+    """Hintergrund-Thread der jede Minute auf Log-Rotation prüft."""
+    while True:
+        try:
+            _rotiere_logs()
+        except Exception:
+            pass
+        time.sleep(60)
 
 
 HTML_SEITE: str = """\
@@ -761,7 +852,7 @@ body {
 <!-- Tab: Logs -->
 <div class="page" id="page-logs">
     <div class="page-header"><span class="page-title">Logs</span></div>
-    <div class="log-hint">Logs werden beim nächsten Schlaf zurückgesetzt</div>
+    <div class="log-hint">Logs werden täglich um 00:00 rotiert</div>
     <div class="log-panel" id="log-panel">
         <div id="log-content"></div>
     </div>
@@ -795,6 +886,10 @@ body {
             <button class="btn-export" onclick="exportLogs()">Logs exportieren</button>
         </div>
     </div>
+    <div class="card">
+        <div class="card-title">Log-Archiv</div>
+        <div id="archiv-liste"><div class="c-dim" style="padding:8px;font-size:13px">Lade...</div></div>
+    </div>
 </div>
 
 <!-- Tab-Bar -->
@@ -823,6 +918,7 @@ function switchTab(name) {
     if (name==='verhalten') ladeVerhalten();
     if (name==='phasen') ladePhasen();
     if (name==='logs') ladeLogPanel();
+    if (name==='steuerung') ladeArchiv();
 }
 
 /* --- Helpers --- */
@@ -1186,7 +1282,8 @@ function exportJSON(){
     fetch('/api/export').then(function(r){return r.json();}).then(function(d){
         var now=new Date();
         var ts=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')
-            +'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
+            +'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')
+            +String(now.getSeconds()).padStart(2,'0');
         var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
         var url=URL.createObjectURL(blob);
         var a=document.createElement('a');
@@ -1205,6 +1302,28 @@ function exportLogs(){
         a.href=url;a.download='genesis_log_'+ts+'.txt';a.click();
         URL.revokeObjectURL(url);
     });
+}
+
+/* --- Archiv --- */
+function ladeArchiv(){
+    fetch('/api/logs/archiv').then(function(r){return r.json();}).then(function(d){
+        var el=document.getElementById('archiv-liste');
+        if(!d.archive||d.archive.length===0){
+            el.innerHTML='<div class="c-dim" style="padding:8px;font-size:13px">Keine archivierten Logs</div>';
+            return;
+        }
+        var h='';
+        for(var i=0;i<d.archive.length;i++){
+            var a=d.archive[i];
+            h+='<div class="row" style="padding:6px 0">';
+            h+='<span class="label" style="font-size:13px">'+a.datum+'</span>';
+            h+='<span class="value" style="display:flex;gap:8px;align-items:center">';
+            h+='<span class="c-dim" style="font-size:12px">'+a.groesse_kb.toFixed(1)+' KB</span>';
+            h+='<a href="/api/logs/archiv/'+a.datum+'" style="color:var(--cyan);font-size:12px;text-decoration:none" download="genesis_log_'+a.datum+'.txt">Download</a>';
+            h+='</span></div>';
+        }
+        el.innerHTML=h;
+    }).catch(function(){});
 }
 
 /* --- Haupt-Loop --- */
@@ -1260,6 +1379,10 @@ class GenesisHandler(BaseHTTPRequestHandler):
             self._sende_json(_api_phasen())
         elif self.path == "/api/export":
             self._sende_json(_api_export())
+        elif self.path == "/api/logs/archiv":
+            self._sende_json(_api_logs_archiv())
+        elif self.path.startswith("/api/logs/archiv/"):
+            self._sende_archiv_log()
         else:
             self._sende_html()
 
@@ -1343,6 +1466,31 @@ class GenesisHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(inhalt)
 
+    def _sende_archiv_log(self) -> None:
+        """Sendet eine archivierte Log-Datei als Download."""
+        # Datum aus Pfad extrahieren: /api/logs/archiv/YYYY-MM-DD
+        datum: str = self.path.split("/")[-1]
+        # Validierung: nur YYYY-MM-DD Format erlauben
+        import re
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", datum):
+            self._sende_json({"fehler": "Ungültiges Datum"})
+            return
+        datei_pfad: Path = _LOG_VERZEICHNIS / f"genesis_log_{datum}.txt"
+        if not datei_pfad.exists():
+            self._sende_json({"fehler": "Archiv nicht gefunden"})
+            return
+        try:
+            inhalt: bytes = datei_pfad.read_bytes()
+        except OSError:
+            inhalt = b""
+        dateiname: str = f"genesis_log_{datum}.txt"
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Disposition", f'attachment; filename="{dateiname}"')
+        self.send_header("Content-Length", str(len(inhalt)))
+        self.end_headers()
+        self.wfile.write(inhalt)
+
     def log_message(self, format: str, *args: Any) -> None:
         """Unterdrückt Standard-Logging für saubere Ausgabe."""
         pass
@@ -1365,8 +1513,13 @@ def main(port: int = 8080) -> None:
     )
     args = parser.parse_args()
 
+    # Log-Rotation Hintergrund-Thread starten
+    rotation_thread = threading.Thread(target=_log_rotation_thread, daemon=True)
+    rotation_thread.start()
+
     server = HTTPServer(("0.0.0.0", args.port), GenesisHandler)
     print(f"Genesis Web-Dashboard gestartet: http://localhost:{args.port}")
+    print("Log-Rotation aktiv (täglich 00:00).")
     print("Ctrl+C zum Beenden.")
 
     try:
