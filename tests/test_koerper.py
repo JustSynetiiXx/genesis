@@ -10,6 +10,7 @@ import pytest
 from vm.genesis.koerper import (
     Koerper,
     _kategorie_cpu_last,
+    _kategorie_eigen_cpu,
     _kategorie_cpu_temp,
     _kategorie_luefter,
     _kategorie_ram,
@@ -76,6 +77,26 @@ class TestKategorieCpuLast:
     def test_ueberlastet(self) -> None:
         assert _kategorie_cpu_last(90.0) == "überlastet"
         assert _kategorie_cpu_last(100.0) == "überlastet"
+
+
+class TestKategorieEigenCpu:
+    """Kategorisierung der eigenen CPU-Auslastung (relativ zu CPU_PROZENT_MAX=200)."""
+
+    def test_niedrig(self) -> None:
+        assert _kategorie_eigen_cpu(0.0) == "niedrig"
+        assert _kategorie_eigen_cpu(59.0) == "niedrig"
+
+    def test_normal(self) -> None:
+        assert _kategorie_eigen_cpu(60.0) == "normal"
+        assert _kategorie_eigen_cpu(99.0) == "normal"
+
+    def test_hoch(self) -> None:
+        assert _kategorie_eigen_cpu(100.0) == "hoch"
+        assert _kategorie_eigen_cpu(149.0) == "hoch"
+
+    def test_ueberlastet(self) -> None:
+        assert _kategorie_eigen_cpu(150.0) == "überlastet"
+        assert _kategorie_eigen_cpu(200.0) == "überlastet"
 
 
 class TestKategorieLuefter:

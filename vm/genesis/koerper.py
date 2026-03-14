@@ -13,6 +13,7 @@ from typing import Any
 import psutil
 
 from shared.leser import lese_sensoren
+from vm.config import CPU_PROZENT_MAX
 
 
 # --- Zustandskategorien ---
@@ -44,12 +45,33 @@ def _kategorie_ram(frei_mb: float) -> str:
 
 
 def _kategorie_cpu_last(prozent: float) -> str:
-    """Kategorisiert CPU-Auslastung (%)."""
+    """Kategorisiert Host-CPU-Auslastung (0-100%)."""
     if prozent < 30.0:
         return "niedrig"
     elif prozent < 60.0:
         return "normal"
     elif prozent < 90.0:
+        return "hoch"
+    else:
+        return "überlastet"
+
+
+def _kategorie_eigen_cpu(prozent: float) -> str:
+    """Kategorisiert eigene CPU-Auslastung relativ zum Maximum.
+
+    psutil.Process.cpu_percent() gibt bei N Kernen Werte bis N*100% zurück.
+    Schwellen sind relativ zu CPU_PROZENT_MAX:
+    - niedrig:    < 30% des Maximums
+    - normal:     30-50% des Maximums
+    - hoch:       50-75% des Maximums
+    - überlastet: > 75% des Maximums
+    """
+    anteil: float = prozent / CPU_PROZENT_MAX
+    if anteil < 0.30:
+        return "niedrig"
+    elif anteil < 0.50:
+        return "normal"
+    elif anteil < 0.75:
         return "hoch"
     else:
         return "überlastet"
@@ -122,7 +144,7 @@ class Koerper:
         kategorien: dict[str, str] = {
             "cpu_temp": _kategorie_cpu_temp(rohwerte["cpu_temp_tctl"]),
             "vm_ram": _kategorie_ram(rohwerte["vm_ram_frei_mb"]),
-            "cpu_last_eigen": _kategorie_cpu_last(rohwerte["eigen_cpu_prozent"]),
+            "cpu_last_eigen": _kategorie_eigen_cpu(rohwerte["eigen_cpu_prozent"]),
             "luefter": _kategorie_luefter(rohwerte["luefter_rpm"]),
             "host_cpu_last": _kategorie_cpu_last(rohwerte["host_cpu_last"]),
             "host_ram": _kategorie_ram(rohwerte["host_ram_frei_mb"]),

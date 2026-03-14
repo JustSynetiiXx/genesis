@@ -63,7 +63,7 @@ class TestBerechneSchmerz:
         rohwerte = {
             "cpu_temp_tctl": 95.0,
             "vm_ram_frei_mb": 5.0,
-            "eigen_cpu_prozent": 99.0,
+            "eigen_cpu_prozent": 200.0,  # CPU_PROZENT_MAX bei 2 Kernen
             "eigen_ram_mb": 1100.0,
             "host_cpu_last": 99.0,
             "luefter_rpm": 5000.0,

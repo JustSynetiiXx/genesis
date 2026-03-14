@@ -32,14 +32,16 @@ class TestReflexBedingungen:
         namen = [r.name for r in gefeuert]
         assert "ram_notfall" not in namen
 
-    def test_cpu_notfall_feuert_ueber_90(self) -> None:
-        rohwerte = {"cpu_temp_tctl": 50.0, "vm_ram_frei_mb": 500.0, "eigen_cpu_prozent": 95.0}
+    def test_cpu_notfall_feuert_ueber_schwelle(self) -> None:
+        # Schwelle: CPU_PROZENT_MAX * 0.9 = 180% bei 2 Kernen
+        rohwerte = {"cpu_temp_tctl": 50.0, "vm_ram_frei_mb": 500.0, "eigen_cpu_prozent": 185.0}
         gefeuert = pruefe(rohwerte)
         namen = [r.name for r in gefeuert]
         assert "cpu_notfall" in namen
 
-    def test_cpu_notfall_feuert_nicht_unter_90(self) -> None:
-        rohwerte = {"cpu_temp_tctl": 50.0, "vm_ram_frei_mb": 500.0, "eigen_cpu_prozent": 85.0}
+    def test_cpu_notfall_feuert_nicht_unter_schwelle(self) -> None:
+        # Unter der Schwelle (180%) darf der Reflex nicht feuern
+        rohwerte = {"cpu_temp_tctl": 50.0, "vm_ram_frei_mb": 500.0, "eigen_cpu_prozent": 170.0}
         gefeuert = pruefe(rohwerte)
         namen = [r.name for r in gefeuert]
         assert "cpu_notfall" not in namen

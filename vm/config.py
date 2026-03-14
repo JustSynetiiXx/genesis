@@ -42,3 +42,7 @@ ABTASTRATE_MAX: float = 5.0          # Langsamstes Intervall
 
 # --- Rechenintensität ---
 RECHEN_STUFE: float = 0.2            # Stufengröße für erhöhen/senken
+
+# --- CPU-Kerne ---
+CPU_KERNE: int = 2                   # Anzahl CPU-Kerne auf dem VPS
+CPU_PROZENT_MAX: float = CPU_KERNE * 100.0  # 200.0 bei 2 Kernen

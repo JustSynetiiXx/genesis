@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from vm.config import CPU_PROZENT_MAX
+
 
 # --- Schmerz-Konfiguration ---
 # Jeder Sensor hat Komfort/Maximum-Grenzen und ein Gewicht.
@@ -27,8 +29,8 @@ SCHMERZ_CONFIG: dict[str, dict[str, Any]] = {
         "invertiert": True,  # Weniger frei = mehr Schmerz
     },
     "eigen_cpu_prozent": {
-        "komfort": 30.0,
-        "maximum": 95.0,
+        "komfort": CPU_PROZENT_MAX * 0.3,
+        "maximum": CPU_PROZENT_MAX * 0.95,
         "gewicht": 0.20,
         "invertiert": False,
     },

@@ -10,6 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
+from vm.config import CPU_PROZENT_MAX
+
 
 @dataclass
 class Reflex:
@@ -37,9 +39,9 @@ REFLEXE: list[Reflex] = [
     ),
     Reflex(
         name="cpu_notfall",
-        bedingung=lambda roh: roh.get("eigen_cpu_prozent", 0.0) > 90.0,
+        bedingung=lambda roh: roh.get("eigen_cpu_prozent", 0.0) > CPU_PROZENT_MAX * 0.9,
         aktion="rechenintensitaet_minimum",
-        beschreibung="Eigene CPU > 90% → Sofort reduzieren",
+        beschreibung=f"Eigene CPU > {CPU_PROZENT_MAX * 0.9:.0f}% → Sofort reduzieren",
     ),
 ]
 
