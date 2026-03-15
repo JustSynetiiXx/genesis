@@ -68,3 +68,18 @@
 - Baseline reicht aus, mehr Daten vom gleichen Verhalten bringen keinen Erkenntnisgewinn
 - Stresstests starten heute um zu sehen ob Genesis auf Umweltstress reagiert
 - Vorhersagen VORHER dokumentiert (VORHERSAGEN.md)
+
+---
+
+## 2026-03-15 (Mittag) — Gebärmutter live, Drillinge leben
+
+### Fakten
+- Gebärmutter als separater Dienst deployed
+- Drei Genesis-Instanzen laufen parallel in Phase "embryo"
+- Erste Beobachtung: Identische Klone zeigen unterschiedliche Schmerzwerte
+- Dashboard musste neu geschrieben werden (JS-Bugs)
+- Falsche Tode durch hartes Beenden werden gelöscht
+
+### Einordnung
+- Architektur funktioniert: Ein Gebärmutter-Prozess, drei Klone
+- Noch zu früh für Schlüsse — erst beobachten

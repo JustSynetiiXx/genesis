@@ -636,6 +636,7 @@ def _api_test_logs() -> dict[str, Any]:
 
 
 
+
 HTML_SEITE: str = r"""<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -647,51 +648,67 @@ HTML_SEITE: str = r"""<!DOCTYPE html>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
---bg:#0a0a0a;--card:rgba(255,255,255,0.04);--card-border:rgba(255,255,255,0.08);
---green:#0f0;--yellow:#fc0;--orange:#f80;--red:#f44;--cyan:#0cc;
---dim:#666;--text:#e0e0e0;--text2:#999;
---tab-h:56px;--safe-b:env(safe-area-inset-bottom,0px);
---mono:'SF Mono','Fira Code','Courier New',monospace;
---sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
---r:12px;
+  --bg:#0a0a0a;
+  --card:rgba(255,255,255,0.03);
+  --card-border:rgba(255,255,255,0.06);
+  --green:#00ff00;--yellow:#ffcc00;--orange:#ff8800;--red:#ff4444;--cyan:#00cccc;
+  --dim:#555;--text:#e0e0e0;--text2:#888;
+  --tab-h:54px;--safe-b:env(safe-area-inset-bottom,0px);
+  --mono:'SF Mono','Fira Code','Courier New',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --r:12px;
 }
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;
-  min-height:100vh;padding-bottom:calc(var(--tab-h) + var(--safe-b) + 8px);
-  -webkit-font-smoothing:antialiased}
-.page{display:none;padding:10px}
+  min-height:100vh;min-height:100dvh;
+  padding-bottom:calc(var(--tab-h) + var(--safe-b) + 12px);
+  -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+.page{display:none;padding:12px 10px}
 .page.active{display:block}
 
 /* Tab Bar */
 .tab-bar{position:fixed;bottom:0;left:0;right:0;
   height:calc(var(--tab-h) + var(--safe-b));padding-bottom:var(--safe-b);
-  background:rgba(10,10,10,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-top:1px solid rgba(255,255,255,0.08);display:flex;z-index:100;
-  overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tab{flex:0 0 auto;min-width:60px;padding:0 8px;
+  background:rgba(10,10,10,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,255,255,0.06);display:flex;z-index:100;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;min-width:54px;padding:0 6px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  color:var(--dim);font-size:9px;font-family:var(--sans);font-weight:500;
+  color:var(--dim);font-size:9px;font-family:var(--sans);font-weight:600;letter-spacing:0.3px;
   cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;
-  text-decoration:none;min-height:44px}
+  text-decoration:none;min-height:44px;transition:color 0.2s}
 .tab.active{color:var(--green)}
-.tab .icon{font-size:20px;line-height:1}
+.tab .icon{font-size:18px;line-height:1}
 
-/* Cards */
+/* Cards — Glasmorphism */
 .card{background:var(--card);border:1px solid var(--card-border);
-  border-radius:var(--r);padding:12px;margin-bottom:8px}
-.card-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;
-  color:var(--dim);margin-bottom:8px;font-weight:600}
-.big{font-family:var(--mono);font-size:28px;font-weight:700;text-align:center}
-.row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px}
+  border-radius:var(--r);padding:14px;margin-bottom:10px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.card-title{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--dim);margin-bottom:10px;font-weight:700}
+.big{font-family:var(--mono);font-size:32px;font-weight:700;text-align:center;line-height:1.1}
+.row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px}
 .label{color:var(--text2)}
 .val{font-family:var(--mono);font-weight:600}
 .dual{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
+/* Warn-Banner */
+.warn-banner{padding:16px;border-radius:var(--r);margin-bottom:10px;text-align:center;font-weight:700;font-size:18px;font-family:var(--sans)}
+.warn-ok{background:linear-gradient(135deg,rgba(0,255,0,0.08),rgba(0,204,204,0.06));border:1px solid rgba(0,255,0,0.15);color:var(--green)}
+.warn-low{background:linear-gradient(135deg,rgba(255,204,0,0.08),rgba(255,136,0,0.06));border:1px solid rgba(255,204,0,0.15);color:var(--yellow)}
+.warn-high{background:linear-gradient(135deg,rgba(255,136,0,0.1),rgba(255,68,68,0.08));border:1px solid rgba(255,136,0,0.2);color:var(--orange)}
+.warn-crit{background:linear-gradient(135deg,rgba(255,68,68,0.12),rgba(255,0,0,0.1));border:1px solid rgba(255,68,68,0.25);color:var(--red)}
+
+/* Schmerz/Wohl Bars */
+.meter{height:6px;border-radius:3px;background:rgba(255,255,255,0.06);overflow:hidden;margin-top:6px}
+.meter-fill{height:100%;border-radius:3px;transition:width 0.6s ease}
+
 /* Status Badge */
 .badge{display:inline-block;font-size:10px;padding:2px 10px;border-radius:10px;
   font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-.badge-lebt{background:rgba(0,255,0,0.12);color:var(--green)}
-.badge-schlaeft{background:rgba(255,204,0,0.12);color:var(--yellow)}
-.badge-tot{background:rgba(255,68,68,0.12);color:var(--red)}
+.badge-lebt{background:rgba(0,255,0,0.1);color:var(--green);border:1px solid rgba(0,255,0,0.2)}
+.badge-schlaeft{background:rgba(255,204,0,0.1);color:var(--yellow);border:1px solid rgba(255,204,0,0.2)}
+.badge-tot{background:rgba(255,68,68,0.1);color:var(--red);border:1px solid rgba(255,68,68,0.2)}
 
 /* Colors */
 .c-green{color:var(--green)}.c-yellow{color:var(--yellow)}.c-orange{color:var(--orange)}
@@ -700,47 +717,55 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 /* Instance Switcher */
 .inst-bar{display:flex;gap:6px;padding:8px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .inst-btn{font-family:var(--sans);font-size:12px;font-weight:600;
-  padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;
-  background:var(--card);color:var(--text);cursor:pointer;white-space:nowrap;
-  -webkit-tap-highlight-color:transparent;text-decoration:none}
-.inst-btn.active{border-color:var(--green);color:var(--green);background:rgba(0,255,0,0.06)}
+  padding:6px 16px;border:1px solid var(--card-border);border-radius:20px;
+  background:var(--card);color:var(--text2);cursor:pointer;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;text-decoration:none;transition:all 0.2s}
+.inst-btn.active{border-color:var(--green);color:var(--green);background:rgba(0,255,0,0.05)}
 
 /* Buttons */
 .btn{font-family:var(--sans);font-size:14px;font-weight:600;
-  padding:12px 18px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;
-  cursor:pointer;background:rgba(255,255,255,0.04);color:var(--text);
+  padding:12px 20px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;
+  cursor:pointer;background:rgba(255,255,255,0.03);color:var(--text);
   min-width:44px;min-height:44px;touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;text-decoration:none}
-.btn:active{opacity:0.7;transform:scale(0.96)}
-.btn-sleep{border-color:rgba(255,204,0,0.3);color:var(--yellow)}
-.btn-wake{border-color:rgba(0,255,0,0.3);color:var(--green)}
-.btn-restart{border-color:rgba(0,204,204,0.3);color:var(--cyan)}
-.btn-good{border-color:rgba(0,255,0,0.3);color:var(--green)}
-.btn-bad{border-color:rgba(255,68,68,0.3);color:var(--red)}
-.btn-stress{border-color:rgba(255,136,0,0.3);color:var(--orange)}
+  -webkit-tap-highlight-color:transparent;text-decoration:none;transition:all 0.15s}
+.btn:active{opacity:0.7;transform:scale(0.97)}
+.btn-sleep{border-color:rgba(255,204,0,0.25);color:var(--yellow)}
+.btn-wake{border-color:rgba(0,255,0,0.25);color:var(--green)}
+.btn-restart{border-color:rgba(0,204,204,0.25);color:var(--cyan)}
+.btn-good{border-color:rgba(0,255,0,0.25);color:var(--green)}
+.btn-bad{border-color:rgba(255,68,68,0.25);color:var(--red)}
+.btn-stress{border-color:rgba(255,136,0,0.25);color:var(--orange)}
 
 /* Bars */
-.bar-bg{background:rgba(255,255,255,0.06);border-radius:4px;height:12px;overflow:hidden;flex:1}
-.bar-fill{height:100%;border-radius:4px;transition:width 0.5s ease}
+.bar-bg{background:rgba(255,255,255,0.06);border-radius:4px;height:14px;overflow:hidden;flex:1;margin-left:8px}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.6s ease}
 
 /* Logs */
-.log-line{font-family:var(--mono);font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);
-  color:var(--text2);word-break:break-all}
+.log-line{font-family:var(--mono);font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);
+  color:var(--text2);word-break:break-all;line-height:1.4}
+.log-line:first-child{color:var(--green);font-weight:600}
 
 /* Phase Cards */
 .phase-card{background:var(--card);border:1px solid var(--card-border);
-  border-radius:var(--r);padding:14px;margin-bottom:10px}
-.phase-card.active-phase{border-color:rgba(0,255,0,0.2);box-shadow:0 0 15px rgba(0,255,0,0.05)}
+  border-radius:var(--r);padding:14px;margin-bottom:10px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.phase-card.active-phase{border-color:rgba(0,255,0,0.15);box-shadow:0 0 20px rgba(0,255,0,0.04)}
 .phase-card h3{font-size:15px;font-weight:700;margin-bottom:10px;color:#fff}
-.criterion{padding:3px 0;font-size:13px;color:var(--text)}
+.criterion{padding:4px 0;font-size:13px;color:var(--text)}
+
+/* Instance Cards (Alle tab) */
+.inst-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--r);
+  padding:14px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:border-color 0.2s}
+.inst-card:active{border-color:rgba(255,255,255,0.15)}
 
 /* Debug Banner */
 #dbg{position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(255,0,0,0.9);
-  color:#fff;padding:10px;font-size:12px;font-family:monospace;max-height:40vh;
-  overflow:auto;white-space:pre-wrap;display:none}
+  color:#fff;padding:10px;font-size:11px;font-family:var(--mono);max-height:35vh;
+  overflow:auto;white-space:pre-wrap;display:none;border-bottom:2px solid #f00}
 
 /* Responsive */
-@media(max-width:400px){.big{font-size:22px}.tab{min-width:50px;font-size:8px}.tab .icon{font-size:17px}}
+@media(max-width:380px){.big{font-size:26px}.tab{min-width:46px;font-size:8px}.tab .icon{font-size:16px}}
 </style>
 </head>
 <body>
@@ -750,235 +775,287 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 <div class="inst-bar" id="inst-bar"></div>
 
 <!-- Pages -->
-<div class="page active" id="page-dashboard"><div id="dashboard-content"><div class="card"><div class="big c-dim">Verbinde...</div></div></div></div>
-<div class="page" id="page-uebersicht"><div id="uebersicht-content"></div></div>
+<div class="page active" id="page-home"><div id="home-content"><div class="card"><div class="big c-dim">Verbinde...</div></div></div></div>
+<div class="page" id="page-alle"><div id="alle-content"></div></div>
 <div class="page" id="page-koerper"><div id="koerper-content"></div></div>
 <div class="page" id="page-gedaechtnis"><div id="gedaechtnis-content"></div></div>
-<div class="page" id="page-verhalten"><div id="verhalten-content"></div></div>
-<div class="page" id="page-umgebung"><div id="umgebung-content"></div></div>
+<div class="page" id="page-stats"><div id="stats-content"></div></div>
+<div class="page" id="page-womb"><div id="womb-content"></div></div>
 <div class="page" id="page-phasen"><div id="phasen-content"></div></div>
 <div class="page" id="page-logs"><div id="logs-content"></div></div>
-<div class="page" id="page-steuerung"><div id="steuerung-content"></div></div>
+<div class="page" id="page-ctrl"><div id="ctrl-content"></div></div>
 
 <!-- Tab Bar -->
 <nav class="tab-bar">
-  <a class="tab active" href="javascript:void(0)" onclick="sw('dashboard')"><span class="icon">&#x1F4CA;</span>Home</a>
-  <a class="tab" href="javascript:void(0)" onclick="sw('uebersicht')"><span class="icon">&#x1F441;</span>Alle</a>
-  <a class="tab" href="javascript:void(0)" onclick="sw('koerper')"><span class="icon">&#x1FAC0;</span>Body</a>
-  <a class="tab" href="javascript:void(0)" onclick="sw('gedaechtnis')"><span class="icon">&#x1F9E0;</span>Memory</a>
-  <a class="tab" href="javascript:void(0)" onclick="sw('verhalten')"><span class="icon">&#x1F3AF;</span>Stats</a>
-  <a class="tab" href="javascript:void(0)" onclick="sw('umgebung')"><span class="icon">&#x1FAC4;</span>Womb</a>
-  <a class="tab" href="javascript:void(0)" onclick="sw('phasen')"><span class="icon">&#x1F4CB;</span>Phasen</a>
-  <a class="tab" href="javascript:void(0)" onclick="sw('logs')"><span class="icon">&#x1F4DC;</span>Logs</a>
-  <a class="tab" href="javascript:void(0)" onclick="sw('steuerung')"><span class="icon">&#x2699;</span>Ctrl</a>
+  <a class="tab active" data-tab="home"><span class="icon">&#x1F3E0;</span>Home</a>
+  <a class="tab" data-tab="alle"><span class="icon">&#x1F465;</span>Alle</a>
+  <a class="tab" data-tab="koerper"><span class="icon">&#x1FAC0;</span>Body</a>
+  <a class="tab" data-tab="gedaechtnis"><span class="icon">&#x1F9E0;</span>Memory</a>
+  <a class="tab" data-tab="stats"><span class="icon">&#x1F4CA;</span>Stats</a>
+  <a class="tab" data-tab="womb"><span class="icon">&#x1FAC4;</span>Womb</a>
+  <a class="tab" data-tab="phasen"><span class="icon">&#x1F4CB;</span>Phasen</a>
+  <a class="tab" data-tab="logs"><span class="icon">&#x1F4DC;</span>Logs</a>
+  <a class="tab" data-tab="ctrl"><span class="icon">&#x2699;&#xFE0F;</span>Ctrl</a>
 </nav>
 
 <script>
 /* === Debug === */
 var dbgEl=document.getElementById('dbg');
-function dbg(m){dbgEl.style.display='block';dbgEl.textContent+=m+'\n';}
+function dbg(m){try{dbgEl.style.display='block';dbgEl.textContent+=m+'\n';}catch(e){}}
 window.onerror=function(m,u,l){dbg('ERR: '+m+' L'+l);};
-window.onunhandledrejection=function(e){dbg('PROMISE: '+(e.reason||e));};
-dbgEl.onclick=function(){dbgEl.style.display='none';};
+window.onunhandledrejection=function(e){dbg('PROMISE: '+(e&&e.reason?e.reason:e));};
+dbgEl.onclick=function(){dbgEl.style.display='none';dbgEl.textContent='';};
 
 /* === Globals === */
 var CI='genesis-1';
-var CT='dashboard';
+var CT='home';
 var LS=null;
 
+/* Safe number helper */
+function sn(v){return(typeof v==='number'&&isFinite(v))?v:0;}
+function sf(v,d){return sn(v).toFixed(d||0);}
+/* Safe exploration: boolean or number */
+function sExpl(v){return v===true?1:v===false?0:sn(v);}
+
 function iq(u){return u+(u.indexOf('?')>=0?'&':'?')+'instance='+encodeURIComponent(CI);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 /* === Instance Bar === */
 function initInst(){
   fetch('/api/instances').then(function(r){return r.json();}).then(function(d){
     var el=document.getElementById('inst-bar');
     if(!d.instanzen||d.instanzen.length<=1){el.style.display='none';return;}
+    el.style.display='';
     var h='';
     for(var i=0;i<d.instanzen.length;i++){
       var n=d.instanzen[i];
-      h+='<a class="inst-btn'+(n.name===CI?' active':'')+'" href="javascript:void(0)" onclick="pickInst(\''+n.name+'\')">'+n.name+'</a>';
+      h+='<a class="inst-btn'+(n.name===CI?' active':'')+'" data-inst="'+esc(n.name)+'">'+esc(n.name)+'</a>';
     }
     el.innerHTML=h;
-  }).catch(function(e){});
+    el.querySelectorAll('.inst-btn').forEach(function(btn){
+      btn.onclick=function(){pickInst(this.getAttribute('data-inst'));};
+    });
+  }).catch(function(){});
 }
 function pickInst(n){CI=n;initInst();update();}
 
 /* === Tab Switching === */
+var allTabs=document.querySelectorAll('.tab');
+allTabs.forEach(function(t){
+  t.onclick=function(){sw(this.getAttribute('data-tab'));};
+});
 function sw(name){
-  var pages=document.querySelectorAll('.page');
-  var tabs=document.querySelectorAll('.tab');
-  for(var i=0;i<pages.length;i++) pages[i].className='page';
-  for(var i=0;i<tabs.length;i++) tabs[i].className='tab';
+  if(!name)return;
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  allTabs.forEach(function(t){t.classList.remove('active');});
   var p=document.getElementById('page-'+name);
-  if(p) p.className='page active';
-  /* find matching tab */
-  for(var i=0;i<tabs.length;i++){
-    if(tabs[i].getAttribute('onclick').indexOf("'"+name+"'")>=0) tabs[i].className='tab active';
-  }
+  if(p)p.classList.add('active');
+  allTabs.forEach(function(t){if(t.getAttribute('data-tab')===name)t.classList.add('active');});
   CT=name;
   loadTab(name);
 }
 
 function loadTab(name){
-  if(name==='dashboard'&&LS) renderDash(LS);
-  else if(name==='uebersicht') loadUebersicht();
-  else if(name==='koerper'&&LS) renderKoerper(LS);
-  else if(name==='gedaechtnis') loadGedaechtnis();
-  else if(name==='verhalten') loadVerhalten();
-  else if(name==='umgebung') loadUmgebung();
-  else if(name==='phasen') loadPhasen();
-  else if(name==='logs') loadLogs();
-  else if(name==='steuerung') renderSteuerung();
+  if(name==='home'&&LS)renderHome(LS);
+  else if(name==='alle')loadAlle();
+  else if(name==='koerper'&&LS)renderKoerper(LS);
+  else if(name==='gedaechtnis')loadGedaechtnis();
+  else if(name==='stats')loadStats();
+  else if(name==='womb')loadWomb();
+  else if(name==='phasen')loadPhasen();
+  else if(name==='logs')loadLogs();
+  else if(name==='ctrl')renderCtrl();
 }
 
 /* === Helpers === */
 function pct(v,mn,mx){return Math.max(0,Math.min(100,((v-mn)/(mx-mn))*100));}
 function fc(v){return v<0.2?'var(--green)':v<0.5?'var(--yellow)':v<0.8?'var(--orange)':'var(--red)';}
 function fcInv(v){return v>0.8?'var(--green)':v>0.5?'var(--yellow)':v>0.2?'var(--orange)':'var(--red)';}
-function setBadge(s){
-  document.title='Genesis ['+(s==='lebt'?'LEBT':s==='schlaeft'?'ZZZ':'TOT')+']';
+function setBadge(s){document.title='Genesis ['+(s==='lebt'?'LEBT':s==='schlaeft'?'ZZZ':'TOT')+']';}
+function fmtSec(s){s=sn(s);if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h '+Math.floor((s%3600)/60)+'m';}
+
+function warnClass(schmerz){
+  var s=sn(schmerz);
+  if(s<0.1)return 'warn-ok';
+  if(s<0.3)return 'warn-low';
+  if(s<0.6)return 'warn-high';
+  return 'warn-crit';
+}
+function warnText(schmerz){
+  var s=sn(schmerz);
+  if(s<0.1)return 'Alles gut';
+  if(s<0.3)return 'Leichter Stress';
+  if(s<0.6)return 'Warnung';
+  return 'KRITISCH';
 }
 
-/* === Dashboard === */
-function renderDash(d){
-  var el=document.getElementById('dashboard-content');
+var aN={'rechenintensitaet':'Rechen','speicher_freigeben':'Speicher','pause':'Pause','abtastrate':'Abtastrate','nichts':'Nichts'};
+
+/* ============================================ */
+/* === HOME TAB                             === */
+/* ============================================ */
+function renderHome(d){
+  var el=document.getElementById('home-content');
   var g=d.genesis;
   var st=d.genesis_status||'tot';
   setBadge(st);
-  if(!g){el.innerHTML='<div class="card"><div class="big c-dim">Keine Daten</div><div style="text-align:center;color:var(--text2);font-size:13px;margin-top:8px">API antwortet, aber genesis_status.json fehlt</div></div>';return;}
+  if(!g){el.innerHTML='<div class="card"><div class="big c-dim">Keine Daten</div><div style="text-align:center;color:var(--text2);font-size:13px;margin-top:8px">genesis_status.json fehlt</div></div>';return;}
 
   var h='';
-  /* Status Badge */
-  h+='<div style="text-align:center;margin:8px 0">';
+  /* Status line */
+  h+='<div style="text-align:center;margin:4px 0 10px">';
   h+='<span class="badge badge-'+st+'">'+(st==='lebt'?'LEBT':st==='schlaeft'?'SCHLAEFT':'TOT')+'</span>';
-  h+=' <span style="color:var(--text2);font-size:12px;margin-left:6px">'+CI+'</span></div>';
-
-  /* Schmerz & Wohlbefinden */
-  var schmerz=g.schmerz||0, wohl=g.wohlbefinden||0;
-  h+='<div class="dual">';
-  h+='<div class="card"><div class="card-title">Schmerz</div>';
-  h+='<div class="big" style="color:'+fc(schmerz)+'">'+schmerz.toFixed(4)+'</div></div>';
-  h+='<div class="card"><div class="card-title">Wohlbefinden</div>';
-  h+='<div class="big" style="color:'+fcInv(wohl)+'">'+wohl.toFixed(4)+'</div></div>';
   h+='</div>';
 
-  /* Aktion */
-  var aN={'rechenintensitaet':'Rechenintensitaet','speicher_freigeben':'Speicher freigeben',
-    'pause':'Pause','abtastrate':'Abtastrate','nichts':'Nichts'};
+  /* Warn Banner */
+  var schmerz=sn(g.schmerz);
+  h+='<div class="warn-banner '+warnClass(schmerz)+'">'+warnText(schmerz)+'</div>';
+
+  /* Schmerz / Wohlbefinden side by side */
+  var wohl=sn(g.wohlbefinden);
+  h+='<div class="dual">';
+  h+='<div class="card" style="text-align:center"><div class="card-title">Schmerz</div>';
+  h+='<div class="big" style="color:'+fc(schmerz)+'">'+sf(schmerz,4)+'</div>';
+  h+='<div class="meter"><div class="meter-fill" style="width:'+(schmerz*100)+'%;background:'+fc(schmerz)+'"></div></div></div>';
+  h+='<div class="card" style="text-align:center"><div class="card-title">Wohlbefinden</div>';
+  h+='<div class="big" style="color:'+fcInv(wohl)+'">'+sf(wohl,4)+'</div>';
+  h+='<div class="meter"><div class="meter-fill" style="width:'+(wohl*100)+'%;background:'+fcInv(wohl)+'"></div></div></div>';
+  h+='</div>';
+
+  /* Aktivitaet */
   var aktion=g.letzte_aktion||'nichts';
-  h+='<div class="card"><div class="card-title">Letzte Aktion</div>';
-  h+='<div class="big c-cyan" style="font-size:18px">'+(aN[aktion]||aktion)+'</div></div>';
+  var modus=g.modus||g.zustand_modus||'-';
+  var cache=sn(g.cache_mb);
+  var rechen=sn(g.rechen_level||g.rechen_stufe);
+  var abtast=sn(g.abtastrate||g.aktuelle_abtastrate);
+  var wachSeit=sn(g.wach_seit);
+  var expl=sExpl(g.exploration);
 
-  /* VM Ressourcen */
-  h+='<div class="dual">';
-  var ram=g.ram_belegt_mb||0, ramMax=g.ram_gesamt_mb||2048;
-  var ramPct=pct(ram,0,ramMax);
-  h+='<div class="card"><div class="card-title">RAM</div>';
-  h+='<div class="big" style="font-size:18px;color:'+fc(ramPct/100)+'">'+ram.toFixed(0)+' / '+ramMax+' MB</div>';
-  h+='<div class="bar-bg"><div class="bar-fill" style="width:'+ramPct+'%;background:'+fc(ramPct/100)+'"></div></div></div>';
-
-  var cpu=g.cpu_prozent||0;
-  h+='<div class="card"><div class="card-title">CPU</div>';
-  h+='<div class="big" style="font-size:18px;color:'+fc(cpu/100)+'">'+cpu.toFixed(1)+'%</div>';
-  h+='<div class="bar-bg"><div class="bar-fill" style="width:'+cpu+'%;background:'+fc(cpu/100)+'"></div></div></div>';
+  h+='<div class="card"><div class="card-title">Aktivit&auml;t</div>';
+  h+='<div class="row"><span class="label">Aktion</span><span class="val c-cyan">'+(aN[aktion]||esc(aktion))+'</span></div>';
+  h+='<div class="row"><span class="label">Modus</span><span class="val c-text">'+esc(modus)+'</span></div>';
+  h+='<div class="row"><span class="label">Cache</span><span class="val" style="color:'+fc(cache/(sn(g.cache_max_mb)||50))+'">'+sf(cache,1)+' MB</span></div>';
+  h+='<div class="row"><span class="label">Rechen-Level</span><span class="val c-text">'+sf(rechen,0)+'</span></div>';
+  h+='<div class="row"><span class="label">Abtastrate</span><span class="val c-text">'+sf(abtast,1)+'</span></div>';
+  h+='<div class="row"><span class="label">Exploration</span><span class="val '+(expl>0.3?'c-yellow':'c-green')+'">'+sf(expl,3)+'</span></div>';
+  h+='<div class="row"><span class="label">Wach seit</span><span class="val c-text">'+fmtSec(wachSeit)+'</span></div>';
   h+='</div>';
 
-  /* Cache + Verfall */
-  h+='<div class="dual">';
-  var cache=g.cache_mb||0, cacheMax=g.cache_max_mb||50;
-  h+='<div class="card"><div class="card-title">Cache</div>';
-  h+='<div class="big" style="font-size:18px;color:'+fc(cache/cacheMax)+'">'+cache.toFixed(1)+' MB</div></div>';
-  var verfall=g.verfall_mb||g.verfall_modifikator||0;
-  h+='<div class="card"><div class="card-title">Verfall</div>';
-  h+='<div class="big c-yellow" style="font-size:18px">'+verfall.toFixed(3)+' MB/t</div></div>';
+  /* Lernen kompakt */
+  h+='<div class="card"><div class="card-title">Lernen</div>';
+  h+='<div class="row"><span class="label">Erfahrungen (heute)</span><span class="val c-cyan">'+(g.erfahrungen_gesamt||0)+'</span></div>';
+  h+='<div class="row"><span class="label">Tick</span><span class="val c-text">'+(g.tick||0)+'</span></div>';
   h+='</div>';
 
-  /* Tick + Erfahrungen */
-  h+='<div class="dual">';
-  h+='<div class="card"><div class="card-title">Tick</div>';
-  h+='<div class="big c-text" style="font-size:18px">'+(g.tick||0)+'</div></div>';
-  h+='<div class="card"><div class="card-title">Erfahrungen</div>';
-  h+='<div class="big c-cyan" style="font-size:18px">'+(g.erfahrungen_gesamt||0)+'</div></div>';
-  h+='</div>';
-
-  /* Exploration */
-  var expl=typeof g.exploration==='number'?g.exploration:(g.exploration?1:0);
-  h+='<div class="card"><div class="card-title">Exploration</div>';
-  h+='<div class="row"><span class="label">Zufallsrate</span><span class="val '+(expl>0.5?'c-yellow':'c-green')+'">'+expl.toFixed(3)+'</span></div>';
-  h+='<div class="bar-bg"><div class="bar-fill" style="width:'+(expl*100)+'%;background:'+(expl>0.5?'var(--yellow)':'var(--green)')+'"></div></div></div>';
+  /* Umgebung kompakt */
+  var umg=g.umgebung||d.umgebung||null;
+  if(umg&&!umg.fehler){
+    h+='<div class="card"><div class="card-title">Umgebung</div>';
+    h+='<div class="row"><span class="label">Phase</span><span class="val c-cyan">'+esc(umg.phase||'?')+'</span></div>';
+    var rW=sn(umg.rhythmus_wert);
+    h+='<div class="row"><span class="label">Rhythmus</span><span class="val c-text">'+sf(rW*100,0)+'%</span></div>';
+    var zoneL={'komfort_zone':'Komfort','normal_zone':'Normal','stress_zone':'Stress'};
+    var zone=umg.zone||umg.feedback_zone||'normal_zone';
+    h+='<div class="row"><span class="label">Zone</span><span class="val c-text">'+(zoneL[zone]||esc(zone))+'</span></div>';
+    h+='</div>';
+  }
 
   el.innerHTML=h;
 }
 
-/* === Uebersicht (all instances) === */
-function loadUebersicht(){
+/* ============================================ */
+/* === ALLE TAB                             === */
+/* ============================================ */
+function loadAlle(){
+  var el=document.getElementById('alle-content');
+  el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch('/api/instances').then(function(r){return r.json();}).then(function(d){
-    var el=document.getElementById('uebersicht-content');
     if(!d.instanzen||d.instanzen.length===0){el.innerHTML='<div class="card"><div class="big c-dim">Keine Instanzen</div></div>';return;}
-    var h='<div class="card"><div class="card-title">Alle Instanzen</div>';
+    var h='';
     for(var i=0;i<d.instanzen.length;i++){
       var n=d.instanzen[i];
-      h+='<div class="row" style="padding:8px 0;border-bottom:1px solid var(--card-border)">';
-      h+='<span>'+n.name+' <span class="badge badge-'+n.status+'" style="font-size:9px">'+n.status+'</span></span>';
-      h+='<span class="val" style="color:'+fc(n.schmerz)+'">S:'+n.schmerz.toFixed(3)+'</span>';
+      var sch=sn(n.schmerz);
+      h+='<div class="inst-card" data-inst="'+esc(n.name)+'">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+      h+='<span style="font-weight:700;font-size:16px;color:#fff">'+esc(n.name)+'</span>';
+      h+='<span class="badge badge-'+n.status+'">'+esc(n.status)+'</span></div>';
+      h+='<div class="row"><span class="label">Schmerz</span><span class="val" style="color:'+fc(sch)+'">'+sf(sch,4)+'</span></div>';
+      h+='<div class="row"><span class="label">Phase</span><span class="val c-cyan">'+esc(n.phase||'?')+'</span></div>';
+      h+='<div class="row"><span class="label">Wach seit</span><span class="val c-text">'+fmtSec(sn(n.wach_seit))+'</span></div>';
       h+='</div>';
     }
-    h+='</div>';
     el.innerHTML=h;
-  }).catch(function(){});
+    el.querySelectorAll('.inst-card').forEach(function(card){
+      card.onclick=function(){var inst=this.getAttribute('data-inst');pickInst(inst);sw('home');};
+    });
+  }).catch(function(e){el.innerHTML='<div class="card"><div class="big c-red">Fehler: '+esc(e)+'</div></div>';});
 }
 
-/* === Koerper === */
+/* ============================================ */
+/* === KOERPER TAB                          === */
+/* ============================================ */
 function renderKoerper(d){
   var el=document.getElementById('koerper-content');
   var g=d.genesis,s=d.sensoren;
   var h='';
-  /* Zustandsvektor */
-  if(g&&g.zustand){
-    h+='<div class="card"><div class="card-title">Zustandsvektor</div>';
-    var z=g.zustand;
-    if(typeof z==='object'){
-      var keys=Object.keys(z);
-      for(var i=0;i<keys.length;i++){
-        h+='<div class="row"><span class="label">'+keys[i]+'</span><span class="val c-text">'+z[keys[i]]+'</span></div>';
-      }
-    } else {
-      h+='<div class="val c-text" style="font-size:12px;word-break:break-all">'+JSON.stringify(z)+'</div>';
-    }
-    h+='</div>';
+
+  /* Vitalwerte */
+  h+='<div class="card"><div class="card-title">Vitalwerte</div>';
+  if(g){
+    var ram=sn(g.ram_belegt_mb),ramMax=sn(g.ram_gesamt_mb)||2048;
+    var cpu=sn(g.cpu_prozent);
+    var cache=sn(g.cache_mb),cacheMax=sn(g.cache_max_mb)||50;
+    h+='<div class="row"><span class="label">RAM</span><span class="val" style="color:'+fc(ram/ramMax)+'">'+sf(ram,0)+' / '+ramMax+' MB</span></div>';
+    h+='<div class="row"><span class="label">CPU</span><span class="val" style="color:'+fc(cpu/200)+'">'+sf(cpu,1)+'%</span></div>';
+    h+='<div class="row"><span class="label">Cache</span><span class="val" style="color:'+fc(cache/cacheMax)+'">'+sf(cache,1)+' / '+cacheMax+' MB</span></div>';
   }
-  /* Host Sensoren */
   if(s){
-    h+='<div class="card"><div class="card-title">Host Sensoren</div>';
-    var sk=[['CPU Temp','cpu_temp','C'],['CPU Last','cpu_last','%'],['RAM','ram_prozent','%'],['Fan','fan_rpm','RPM']];
+    var sk=[['CPU Temp','cpu_temp','\u00b0C'],['CPU Last','cpu_last','%'],['RAM Host','ram_prozent','%'],['Fan','fan_rpm','RPM']];
     for(var i=0;i<sk.length;i++){
       var v=s[sk[i][1]];
       if(v!==undefined&&v!==null){
         h+='<div class="row"><span class="label">'+sk[i][0]+'</span><span class="val c-text">'+v+' '+sk[i][2]+'</span></div>';
       }
     }
-    h+='</div>';
   }
-  /* Schmerzkomponenten */
-  if(g&&g.schmerz_komponenten){
-    h+='<div class="card"><div class="card-title">Schmerz-Komponenten</div>';
-    var sk=g.schmerz_komponenten;
-    if(typeof sk==='object'){
-      var keys=Object.keys(sk);
+  h+='</div>';
+
+  /* Zustandsvektor */
+  if(g&&g.zustand){
+    h+='<div class="card"><div class="card-title">Zustandsvektor</div>';
+    var z=g.zustand;
+    if(typeof z==='object'&&z!==null){
+      var keys=Object.keys(z);
       for(var i=0;i<keys.length;i++){
-        var v=sk[keys[i]];
-        var w=(typeof v==='number')?v.toFixed(4):v;
-        h+='<div class="row"><span class="label">'+keys[i]+'</span>';
-        h+='<span class="val" style="color:'+fc(typeof v==='number'?v:0)+'">'+w+'</span></div>';
+        h+='<div class="row"><span class="label">'+esc(keys[i])+'</span><span class="val c-text">'+esc(z[keys[i]])+'</span></div>';
       }
     }
     h+='</div>';
   }
-  if(!h) h='<div class="card"><div class="big c-dim">Keine Koerperdaten</div></div>';
+
+  /* Schmerz-Beitraege */
+  var sd=g?(g.schmerz_details||g.schmerz_komponenten||g.schmerz_beitraege):null;
+  if(sd&&typeof sd==='object'){
+    h+='<div class="card"><div class="card-title">Schmerz-Beitr&auml;ge</div>';
+    var keys=Object.keys(sd);
+    for(var i=0;i<keys.length;i++){
+      var v=sn(sd[keys[i]]);
+      var w=Math.min(v*100/0.3,100);
+      h+='<div style="padding:4px 0">';
+      h+='<div class="row" style="margin-bottom:2px"><span class="label">'+esc(keys[i])+'</span><span class="val" style="color:'+fc(v)+'">'+sf(v,4)+'</span></div>';
+      h+='<div class="meter"><div class="meter-fill" style="width:'+w+'%;background:'+fc(v)+'"></div></div>';
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+
+  if(!h||h==='')h='<div class="card"><div class="big c-dim">Keine Koerperdaten</div></div>';
   el.innerHTML=h;
 }
 
-/* === Gedaechtnis === */
+/* ============================================ */
+/* === GEDAECHTNIS TAB                      === */
+/* ============================================ */
 function loadGedaechtnis(){
   var el=document.getElementById('gedaechtnis-content');
   el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
@@ -987,240 +1064,316 @@ function loadGedaechtnis(){
     fetch(iq('/api/tode')).then(function(r){return r.json();}),
     fetch(iq('/api/kurzzeit/stats')).then(function(r){return r.json();})
   ]).then(function(res){
-    var lz=res[0],td=res[1],kz=res[2];
+    var lz=res[0]||{},td=res[1]||{},kz=res[2]||{};
     var h='';
-    /* Stats */
+
+    /* Kurzzeit Stats */
     h+='<div class="dual">';
-    h+='<div class="card"><div class="card-title">Langzeit</div><div class="big c-cyan">'+(lz.gesamt||0)+'</div></div>';
     h+='<div class="card"><div class="card-title">Kurzzeit</div><div class="big c-cyan">'+(kz.gesamt||0)+'</div></div>';
+    h+='<div class="card"><div class="card-title">Langzeit</div><div class="big c-cyan">'+(lz.gesamt||0)+'</div></div>';
     h+='</div>';
 
-    /* Tode */
-    h+='<div class="card"><div class="card-title">Tode &amp; Schlaf</div>';
-    h+='<div class="row"><span class="label">Echte Tode</span><span class="val c-red">'+(td.gesamt_tode||0)+'</span></div>';
-    h+='<div class="row"><span class="label">Schlaf</span><span class="val c-yellow">'+(td.gesamt_schlaf||0)+'</span></div>';
-    if(td.tode&&td.tode.length>0){
-      for(var i=0;i<Math.min(td.tode.length,10);i++){
-        var t=td.tode[i];
-        var typ=t.war_schlaf?'Schlaf':'Tod';
-        var col=t.war_schlaf?'c-yellow':'c-red';
-        h+='<div class="row" style="font-size:12px"><span class="label '+col+'">'+typ+'</span>';
-        h+='<span class="val c-dim">S:'+(t.letzter_schmerz||0).toFixed(3)+'</span></div>';
-      }
-    }
+    /* Tode compact */
+    h+='<div class="dual">';
+    h+='<div class="card"><div class="card-title">Tode</div><div class="big c-red">'+(td.gesamt_tode||0)+'</div></div>';
+    h+='<div class="card"><div class="card-title">Schlaf</div><div class="big c-yellow">'+(td.gesamt_schlaf||0)+'</div></div>';
     h+='</div>';
 
-    /* Langzeit Eintraege */
-    if(lz.eintraege&&lz.eintraege.length>0){
-      h+='<div class="card"><div class="card-title">Gelernte Muster (Top 20)</div>';
-      for(var i=0;i<Math.min(lz.eintraege.length,20);i++){
-        var e=lz.eintraege[i];
-        var dc=e.durchschnitt_delta<0?'c-green':'c-red';
-        h+='<div class="row" style="font-size:12px;border-bottom:1px solid var(--card-border);padding:6px 0">';
-        h+='<span class="label" style="flex:1">'+e.aktion+' (x'+e.anzahl+')</span>';
-        h+='<span class="val '+dc+'">'+e.durchschnitt_delta.toFixed(4)+'</span></div>';
+    /* Langzeit Tabelle */
+    var eintr=lz.eintraege||[];
+    if(eintr.length>0){
+      h+='<div class="card"><div class="card-title">Gelernte Muster</div>';
+      for(var i=0;i<Math.min(eintr.length,30);i++){
+        var e=eintr[i];
+        var delta=sn(e.durchschnitt_delta);
+        var dc=delta<-0.02?'c-green':delta>0.02?'c-red':'c-cyan';
+        /* Zustand kompakt */
+        var zStr='Normalzustand';
+        if(e.zustand&&typeof e.zustand==='object'){
+          var abw=[];
+          var zk=Object.keys(e.zustand);
+          for(var j=0;j<zk.length;j++){
+            var zv=e.zustand[zk[j]];
+            if(zv!=='normal'&&zv!=='niedrig')abw.push(zk[j]+':'+zv);
+          }
+          if(abw.length>0)zStr=abw.join(', ');
+        }
+        h+='<div style="padding:6px 0;border-bottom:1px solid var(--card-border);font-size:12px">';
+        h+='<div class="row"><span class="label" style="flex:1">'+(aN[e.aktion]||esc(e.aktion))+' <span class="c-dim">x'+e.anzahl+'</span></span>';
+        h+='<span class="val '+dc+'">'+sf(delta,4)+'</span></div>';
+        h+='<div style="color:var(--dim);font-size:11px;margin-top:2px">'+esc(zStr)+'</div>';
+        h+='</div>';
       }
       h+='</div>';
     }
 
-    /* Kurzzeit Aktionen */
-    if(kz.aktionen){
-      var keys=Object.keys(kz.aktionen);
-      if(keys.length>0){
-        h+='<div class="card"><div class="card-title">Aktions-Statistik</div>';
-        for(var i=0;i<keys.length;i++){
-          var a=kz.aktionen[keys[i]];
-          var dc=a.avg_delta<0?'c-green':'c-red';
-          h+='<div class="row" style="font-size:13px"><span class="label">'+keys[i]+' (x'+a.anzahl+')</span>';
-          h+='<span class="val '+dc+'">'+a.avg_delta.toFixed(5)+'</span></div>';
-        }
-        h+='</div>';
-      }
-    }
     el.innerHTML=h;
-  }).catch(function(e){el.innerHTML='<div class="card"><div class="big c-red">Fehler: '+e+'</div></div>';});
+  }).catch(function(e){el.innerHTML='<div class="card"><div class="big c-red">Fehler: '+esc(e)+'</div></div>';});
 }
 
-/* === Verhalten (Stats) === */
-function loadVerhalten(){
-  var el=document.getElementById('verhalten-content');
-  if(!LS||!LS.genesis){el.innerHTML='<div class="card"><div class="big c-dim">Keine Daten</div></div>';return;}
-  var g=LS.genesis;
-  var h='';
-  /* Aktions-Historie wenn verfuegbar */
-  h+='<div class="card"><div class="card-title">Aktuelles Verhalten</div>';
-  h+='<div class="row"><span class="label">Aktion</span><span class="val c-cyan">'+(g.letzte_aktion||'?')+'</span></div>';
-  h+='<div class="row"><span class="label">Schmerz</span><span class="val" style="color:'+fc(g.schmerz||0)+'">'+(g.schmerz||0).toFixed(4)+'</span></div>';
-  h+='<div class="row"><span class="label">Wohlbefinden</span><span class="val" style="color:'+fcInv(g.wohlbefinden||0)+'">'+(g.wohlbefinden||0).toFixed(4)+'</span></div>';
-  h+='<div class="row"><span class="label">Exploration</span><span class="val c-yellow">'+(typeof g.exploration==='number'?g.exploration:(g.exploration?1:0)).toFixed(3)+'</span></div>';
-  h+='<div class="row"><span class="label">Tick</span><span class="val c-text">'+(g.tick||0)+'</span></div>';
-  h+='<div class="row"><span class="label">Erfahrungen</span><span class="val c-text">'+(g.erfahrungen_gesamt||0)+'</span></div>';
-  h+='</div>';
-  /* Reiz */
-  if(g.reiz_aktiv){
-    h+='<div class="card"><div class="card-title">Aktiver Reiz</div>';
-    h+='<div class="row"><span class="label">Typ</span><span class="val c-orange">'+(g.reiz_typ||g.reiz_aktiv)+'</span></div>';
-    h+='<div class="row"><span class="label">Staerke</span><span class="val c-orange">'+(g.reiz_staerke||0).toFixed(1)+'</span></div>';
+/* ============================================ */
+/* === STATS/VERHALTEN TAB                  === */
+/* ============================================ */
+function loadStats(){
+  var el=document.getElementById('stats-content');
+  el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
+  fetch(iq('/api/kurzzeit/stats')).then(function(r){return r.json();}).then(function(kz){
+    var h='';
+    var aktionen=kz.aktionen||{};
+    var keys=Object.keys(aktionen);
+    var gesamt=kz.gesamt||1;
+
+    if(keys.length===0){
+      el.innerHTML='<div class="card"><div class="big c-dim">Noch keine Aktionen</div></div>';
+      return;
+    }
+
+    h+='<div class="card"><div class="card-title">Aktions-Verteilung</div>';
+    for(var i=0;i<keys.length;i++){
+      var a=aktionen[keys[i]];
+      var anzahl=sn(a.anzahl);
+      var avgD=sn(a.avg_delta);
+      var barW=Math.max(2,(anzahl/gesamt)*100);
+      var barC=avgD<-0.02?'var(--green)':avgD>0.02?'var(--red)':'var(--cyan)';
+      var dc=avgD<-0.02?'c-green':avgD>0.02?'c-red':'c-cyan';
+
+      h+='<div style="padding:8px 0;border-bottom:1px solid var(--card-border)">';
+      h+='<div class="row"><span class="label">'+(aN[keys[i]]||esc(keys[i]))+'</span>';
+      h+='<span class="val '+dc+'">'+sf(avgD,5)+' <span class="c-dim" style="font-size:11px">x'+anzahl+'</span></span></div>';
+      h+='<div style="height:10px;border-radius:5px;background:rgba(255,255,255,0.04);overflow:hidden;margin-top:4px">';
+      h+='<div style="height:100%;width:'+barW+'%;background:'+barC+';border-radius:5px;transition:width 0.5s"></div></div>';
+      h+='</div>';
+    }
+    h+='<div style="margin-top:10px;font-size:11px;color:var(--dim)">';
+    h+='<span class="c-green">&#9632;</span> Hilft (delta &lt; -0.02) &nbsp; ';
+    h+='<span class="c-cyan">&#9632;</span> Neutral (&plusmn;0.02) &nbsp; ';
+    h+='<span class="c-red">&#9632;</span> Schadet (delta &gt; 0.02)</div>';
     h+='</div>';
-  }
-  el.innerHTML=h;
+
+    /* Current behavior from LS */
+    if(LS&&LS.genesis){
+      var g=LS.genesis;
+      var expl=sExpl(g.exploration);
+      h+='<div class="card"><div class="card-title">Aktuell</div>';
+      h+='<div class="row"><span class="label">Aktion</span><span class="val c-cyan">'+(aN[g.letzte_aktion]||esc(g.letzte_aktion||'?'))+'</span></div>';
+      h+='<div class="row"><span class="label">Exploration</span><span class="val '+(expl>0.3?'c-yellow':'c-green')+'">'+sf(expl,3)+'</span></div>';
+      h+='<div class="row"><span class="label">Tick</span><span class="val c-text">'+(g.tick||0)+'</span></div>';
+      h+='</div>';
+    }
+
+    el.innerHTML=h;
+  }).catch(function(e){el.innerHTML='<div class="card"><div class="big c-red">Fehler: '+esc(e)+'</div></div>';});
 }
 
-/* === Umgebung (Womb) === */
-function loadUmgebung(){
-  var el=document.getElementById('umgebung-content');
+/* ============================================ */
+/* === WOMB/UMGEBUNG TAB                    === */
+/* ============================================ */
+function loadWomb(){
+  var el=document.getElementById('womb-content');
   el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch(iq('/api/umgebung')).then(function(r){return r.json();}).then(function(u){
+    if(!u||u.fehler){el.innerHTML='<div class="card"><div class="big c-dim">'+(u&&u.fehler?esc(u.fehler):'Keine Daten')+'</div></div>';return;}
     var h='';
-    if(u.fehler){h='<div class="card"><div class="big c-dim">'+u.fehler+'</div></div>';el.innerHTML=h;return;}
+
+    /* Phase */
+    h+='<div class="card" style="text-align:center"><div class="card-title">Entwicklungsphase</div>';
+    h+='<div class="big c-cyan" style="font-size:22px">'+esc(u.phase||'?')+'</div></div>';
 
     /* Rhythmus */
+    var rW=sn(u.rhythmus_wert);
     h+='<div class="card"><div class="card-title">Rhythmus</div>';
-    var rW=u.rhythmus_wert||0;
-    h+='<div class="big c-cyan" style="font-size:20px">'+(rW*100).toFixed(0)+'%</div>';
-    h+='<div style="text-align:center;color:var(--text2);font-size:12px;margin-top:4px">'+(u.rhythmus_kategorie||'?')+'</div>';
+    h+='<div class="big c-cyan" style="font-size:22px">'+sf(rW*100,0)+'%</div>';
+    h+='<div style="text-align:center;color:var(--text2);font-size:12px;margin-top:4px">'+esc(u.rhythmus_kategorie||'')+'</div>';
+    h+='<div class="meter" style="margin-top:8px"><div class="meter-fill" style="width:'+(rW*100)+'%;background:var(--cyan)"></div></div>';
     h+='</div>';
 
-    /* Verfall + Naehrstoffe */
+    /* Verfall + Reiz */
     h+='<div class="dual">';
+    var vMB=sn(u.verfall_mb||u.verfall_modifikator||0.2);
     h+='<div class="card"><div class="card-title">Verfall</div>';
-    var vMB=u.verfall_mb||u.verfall_modifikator||0.2;
-    h+='<div class="big" style="font-size:18px;color:'+(vMB<0.15?'var(--green)':vMB<0.25?'var(--yellow)':'var(--orange)')+'">'+vMB.toFixed(3)+' MB/t</div></div>';
-    h+='<div class="card"><div class="card-title">Naehrstoff</div>';
-    h+='<div class="big c-cyan" style="font-size:18px">'+(u.ticks_bis_schub||u.naechster_schub_in||'?')+'</div>';
-    h+='<div style="text-align:center;font-size:11px;color:var(--text2)">Ticks bis Schub</div></div>';
-    h+='</div>';
+    h+='<div class="big" style="font-size:18px;color:'+(vMB<0.15?'var(--green)':vMB<0.25?'var(--yellow)':'var(--orange)')+'">'+sf(vMB,3)+'</div>';
+    h+='<div style="text-align:center;font-size:11px;color:var(--dim)">MB/tick</div></div>';
+    var reiz=u.aktiver_reiz||u.reiz||null;
+    h+='<div class="card"><div class="card-title">Reiz</div>';
+    if(reiz&&typeof reiz==='object'&&reiz.typ){
+      h+='<div class="big c-orange" style="font-size:18px">'+esc(reiz.typ)+'</div>';
+      h+='<div style="text-align:center;font-size:11px;color:var(--dim)">St&auml;rke: '+sf(sn(reiz.staerke),1)+'</div>';
+    } else {
+      h+='<div class="big c-dim" style="font-size:18px">Keiner</div>';
+    }
+    h+='</div></div>';
 
     /* Zone */
     var zoneL={'komfort_zone':'Komfort','normal_zone':'Normal','stress_zone':'Stress'};
     var zoneC={'komfort_zone':'var(--green)','normal_zone':'var(--cyan)','stress_zone':'var(--orange)'};
     var zone=u.zone||u.feedback_zone||'normal_zone';
     h+='<div class="card"><div class="card-title">Feedback-Zone</div>';
-    h+='<div class="big" style="font-size:20px;color:'+(zoneC[zone]||'var(--dim)')+'">'+(zoneL[zone]||zone)+'</div></div>';
+    h+='<div class="big" style="font-size:22px;color:'+(zoneC[zone]||'var(--dim)')+'">'+(zoneL[zone]||esc(zone))+'</div></div>';
 
     /* Features */
     var feat=u.features||{};
-    h+='<div class="card"><div class="card-title">Features</div>';
-    var fl=[['Rhythmus',feat.rhythmus||feat.rhythmus_aktiv],['Naehrung',feat.naehrung||feat.variable_naehrung],
-            ['Reize',feat.reize||feat.reize_aktiv],['Feedback',feat.feedback||feat.feedback_aktiv],
+    h+='<div class="card"><div class="card-title">Features der Phase</div>';
+    var fl=[['Rhythmus',feat.rhythmus||feat.rhythmus_aktiv],
+            ['Variable N&auml;hrung',feat.naehrung||feat.variable_naehrung],
+            ['Reize',feat.reize||feat.reize_aktiv],
+            ['Feedback',feat.feedback||feat.feedback_aktiv],
             ['Ext. Aktionen',feat.externe_aktionen]];
     for(var i=0;i<fl.length;i++){
       h+='<div class="row"><span class="label">'+fl[i][0]+'</span>';
-      h+='<span class="val '+(fl[i][1]?'c-green':'c-dim')+'">'+(fl[i][1]?'aktiv':'-')+'</span></div>';
+      h+='<span class="val '+(fl[i][1]?'c-green':'c-dim')+'">'+(fl[i][1]?'Aktiv':'-')+'</span></div>';
     }
     h+='</div>';
 
     el.innerHTML=h;
-  }).catch(function(e){el.innerHTML='<div class="card"><div class="big c-red">Fehler: '+e+'</div></div>';});
+  }).catch(function(e){el.innerHTML='<div class="card"><div class="big c-red">Fehler: '+esc(e)+'</div></div>';});
 }
 
-/* === Phasen === */
+/* ============================================ */
+/* === PHASEN TAB                           === */
+/* ============================================ */
 function loadPhasen(){
   var el=document.getElementById('phasen-content');
   el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch(iq('/api/phasen')).then(function(r){return r.json();}).then(function(p){
+    if(!p){el.innerHTML='<div class="card"><div class="big c-dim">Keine Phasendaten</div></div>';return;}
     var h='';
-    var ck=function(ok){return ok?'[OK] ':'[--] ';};
+    var ck=function(ok){return ok?'\u2705 ':'\uD83D\uDD34 ';};
     var psC=function(s){return s==='aktiv'?'badge-lebt':s==='bereit'?'badge-schlaeft':'badge-tot';};
 
     /* Phase 1 */
-    h+='<div class="phase-card"><h3>Phase 1 - Basis Code <span class="badge badge-lebt">done</span></h3>';
-    h+='<div class="criterion">[OK] Sensorik, Schmerz, Reflexe</div>';
-    h+='<div class="criterion">[OK] 132 Tests bestanden</div></div>';
+    h+='<div class="phase-card"><h3>Phase 1 \u2014 Basis Code <span class="badge badge-lebt">done</span></h3>';
+    h+='<div class="criterion">\u2705 Sensorik, Schmerz, Reflexe</div>';
+    h+='<div class="criterion">\u2705 132 Tests bestanden</div></div>';
 
     /* Phase 2 */
-    var p2=p.phase2;
-    h+='<div class="phase-card active-phase"><h3>Phase 2 - Beobachtung <span class="badge '+psC(p2.status)+'">'+p2.status+'</span></h3>';
-    h+='<div class="criterion">'+ck(p2.kurzzeit_erfahrungen>0)+'Erfahrungen: '+p2.kurzzeit_erfahrungen+'</div>';
-    h+='<div class="criterion">'+ck(p2.tode_gesamt>0)+'Tode: '+p2.tode_gesamt+'</div>';
-    h+='<div class="criterion">'+ck(p2.langzeit_eintraege>=10)+'Langzeit-Muster: '+p2.langzeit_eintraege+' (Ziel: 10+)</div></div>';
+    var p2=p.phase2||{};
+    h+='<div class="phase-card active-phase"><h3>Phase 2 \u2014 Beobachtung <span class="badge '+psC(p2.status||'')+'">'+esc(p2.status||'?')+'</span></h3>';
+    h+='<div class="criterion">'+ck((p2.kurzzeit_erfahrungen||0)>0)+'Erfahrungen: '+(p2.kurzzeit_erfahrungen||0)+'</div>';
+    h+='<div class="criterion">'+ck((p2.tode_gesamt||0)>0)+'Tode: '+(p2.tode_gesamt||0)+'</div>';
+    h+='<div class="criterion">'+ck((p2.langzeit_eintraege||0)>=10)+'Langzeit-Muster: '+(p2.langzeit_eintraege||0)+' (Ziel: 10+)</div></div>';
 
     /* Phase 3 */
-    var p3=p.phase3;
-    h+='<div class="phase-card"><h3>Phase 3 - Klon-Test <span class="badge '+psC(p3.status)+'">'+p3.status+'</span></h3>';
+    var p3=p.phase3||{};
+    h+='<div class="phase-card"><h3>Phase 3 \u2014 Klon-Test <span class="badge '+psC(p3.status||'')+'">'+esc(p3.status||'?')+'</span></h3>';
     h+='<div class="criterion">'+ck(p3.baseline_vorhanden)+'Baseline vorhanden</div></div>';
 
     /* Phase 4 */
-    var p4=p.phase4;
-    h+='<div class="phase-card"><h3>Phase 4 - Erweiterter Laufstall <span class="badge '+psC(p4.status)+'">'+p4.status+'</span></h3>';
-    h+='<div class="criterion">'+ck(p4.muster_ohne_reflex>=3)+'Muster: '+p4.muster_ohne_reflex+' (Ziel: 3+)</div>';
+    var p4=p.phase4||{};
+    h+='<div class="phase-card"><h3>Phase 4 \u2014 Erweiterter Laufstall <span class="badge '+psC(p4.status||'')+'">'+esc(p4.status||'?')+'</span></h3>';
+    h+='<div class="criterion">'+ck((p4.muster_ohne_reflex||0)>=3)+'Muster ohne Reflex: '+(p4.muster_ohne_reflex||0)+' (Ziel: 3+)</div>';
     h+='<div class="criterion">'+ck(p4.aus_tod_gelernt)+'Aus Tod gelernt</div>';
-    h+='<div class="criterion">'+ck(p4.stresstest_ueberlebt)+'Stresstest ueberlebt</div></div>';
+    h+='<div class="criterion">'+ck(p4.stresstest_ueberlebt)+'Stresstest &uuml;berlebt</div></div>';
 
     /* Phase 5 */
-    h+='<div class="phase-card"><h3>Phase 5 - Laptop <span class="badge badge-tot">'+p.phase5.status+'</span></h3>';
-    h+='<div class="criterion">[--] Phase 4 abgeschlossen</div></div>';
+    var p5=p.phase5||{};
+    h+='<div class="phase-card"><h3>Phase 5 \u2014 Laptop <span class="badge badge-tot">'+esc(p5.status||'nicht_erreicht')+'</span></h3>';
+    h+='<div class="criterion">\uD83D\uDD34 Phase 4 abgeschlossen</div></div>';
 
     el.innerHTML=h;
-  }).catch(function(){});
+  }).catch(function(e){el.innerHTML='<div class="card"><div class="big c-red">Fehler: '+esc(e)+'</div></div>';});
 }
 
-/* === Logs === */
+/* ============================================ */
+/* === LOGS TAB                             === */
+/* ============================================ */
 function loadLogs(){
   var el=document.getElementById('logs-content');
   el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch(iq('/api/logs')).then(function(r){return r.json();}).then(function(d){
+    var logs=d.logs||[];
     var h='<div class="card"><div class="card-title">Logs (neueste zuerst)</div>';
-    if(!d.logs||d.logs.length===0){h+='<div class="c-dim">Keine Logs</div>';}
+    if(logs.length===0){h+='<div class="c-dim">Keine Logs</div>';}
     else{
-      for(var i=0;i<d.logs.length;i++){
-        h+='<div class="log-line">'+d.logs[i].replace(/</g,'&lt;')+'</div>';
+      for(var i=0;i<logs.length;i++){
+        h+='<div class="log-line">'+esc(logs[i])+'</div>';
       }
     }
     h+='</div>';
     el.innerHTML=h;
-  }).catch(function(){});
+  }).catch(function(e){el.innerHTML='<div class="card"><div class="big c-red">Fehler: '+esc(e)+'</div></div>';});
 }
 
-/* === Steuerung === */
-function renderSteuerung(){
-  var el=document.getElementById('steuerung-content');
+/* ============================================ */
+/* === CONTROL TAB                          === */
+/* ============================================ */
+function renderCtrl(){
+  var el=document.getElementById('ctrl-content');
   var h='';
-  h+='<div class="card"><div class="card-title">Signale</div>';
+
+  /* Schlaf/Aufwecken/Neustart */
+  h+='<div class="card"><div class="card-title">Steuerung ('+esc(CI)+')</div>';
   h+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
-  h+='<button class="btn btn-good" onclick="sig(\'good\')">Gut</button>';
-  h+='<button class="btn btn-bad" onclick="sig(\'bad\')">Schlecht</button>';
-  h+='<button class="btn btn-sleep" onclick="sig(\'sleep\')">Schlafen</button>';
-  h+='<button class="btn btn-wake" onclick="sig(\'wake\')">Aufwecken</button>';
-  h+='<button class="btn btn-restart" onclick="sig(\'restart\')">Neustart</button>';
+  h+='<button class="btn btn-sleep" id="btn-sleep">Schlafen</button>';
+  h+='<button class="btn btn-wake" id="btn-wake">Aufwecken</button>';
+  h+='<button class="btn btn-restart" id="btn-restart">Neustart</button>';
   h+='</div></div>';
 
+  /* Eltern-Signale */
+  h+='<div class="card"><div class="card-title">Eltern-Signale</div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+  h+='<button class="btn btn-good" id="btn-good">Gut</button>';
+  h+='<button class="btn btn-bad" id="btn-bad">Schlecht</button>';
+  h+='</div></div>';
+
+  /* Stresstests */
   h+='<div class="card"><div class="card-title">Stresstests</div>';
   h+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
-  h+='<button class="btn btn-stress" onclick="startTest(\'cpu\')">CPU Stress</button>';
-  h+='<button class="btn btn-stress" onclick="startTest(\'ram\')">RAM Stress</button>';
-  h+='<button class="btn btn-stress" onclick="startTest(\'kombi\')">Kombi Stress</button>';
+  h+='<button class="btn btn-stress" id="btn-cpu">CPU Stress</button>';
+  h+='<button class="btn btn-stress" id="btn-ram">RAM Stress</button>';
+  h+='<button class="btn btn-stress" id="btn-kombi">Kombi</button>';
   h+='</div>';
-  h+='<div id="test-status" style="margin-top:8px;font-size:12px;color:var(--text2)"></div>';
+  h+='<div id="test-status" style="margin-top:10px;font-size:12px;color:var(--text2)"></div>';
   h+='</div>';
 
+  /* Export */
   h+='<div class="card"><div class="card-title">Export</div>';
   h+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
-  h+='<button class="btn" onclick="exportJSON()">JSON Export</button>';
-  h+='<button class="btn" onclick="exportLogs()">Log Export</button>';
+  h+='<button class="btn" id="btn-json">JSON Export</button>';
+  h+='<button class="btn" id="btn-logex">Log Export</button>';
   h+='</div></div>';
 
+  /* Log-Archiv */
+  h+='<div class="card"><div class="card-title">Log-Archiv</div>';
+  h+='<div id="log-archiv" style="font-size:12px;color:var(--text2)">Lade...</div>';
+  h+='</div>';
+
   el.innerHTML=h;
+
+  /* Bind events */
+  document.getElementById('btn-sleep').onclick=function(){sendSignal('sleep');};
+  document.getElementById('btn-wake').onclick=function(){sendSignal('wake');};
+  document.getElementById('btn-restart').onclick=function(){sendSignal('restart');};
+  document.getElementById('btn-good').onclick=function(){sendSignal('good');};
+  document.getElementById('btn-bad').onclick=function(){sendSignal('bad');};
+  document.getElementById('btn-cpu').onclick=function(){startTest('cpu');};
+  document.getElementById('btn-ram').onclick=function(){startTest('ram');};
+  document.getElementById('btn-kombi').onclick=function(){startTest('kombi');};
+  document.getElementById('btn-json').onclick=exportJSON;
+  document.getElementById('btn-logex').onclick=exportLogs;
+
   updateTestStatus();
+  loadLogArchiv();
 }
 
-/* === Signals === */
-function sig(typ){
-  var url='';
-  if(typ==='sleep')url='/api/signal/sleep';
-  else if(typ==='wake')url='/api/control/wake';
-  else if(typ==='restart')url='/api/control/restart';
-  else if(typ==='good')url='/api/signal/good';
-  else if(typ==='bad')url='/api/signal/bad';
-  fetch(url,{method:'POST'});
+/* === Control Functions === */
+function sendSignal(typ){
+  var urlMap={'sleep':'/api/signal/sleep','wake':iq('/api/control/wake'),
+    'restart':iq('/api/control/restart'),'good':'/api/signal/good','bad':'/api/signal/bad'};
+  var url=urlMap[typ];
+  if(!url)return;
+  /* Add instance param for signals */
+  if(typ==='sleep'||typ==='good'||typ==='bad')url=iq(url);
+  fetch(url,{method:'POST'}).then(function(r){return r.json();}).then(function(d){
+    if(d&&d.ok===false)alert('Fehler: '+(d.fehler||'Unbekannt'));
+  }).catch(function(e){dbg('Signal error: '+e);});
 }
 
 function startTest(typ){
   if(!confirm('Stresstest "'+typ+'" starten?'))return;
   fetch('/api/test/'+typ,{method:'POST'}).then(function(r){return r.json();}).then(function(d){
-    if(!d.ok)alert('Fehler: '+d.fehler);
+    if(!d.ok)alert('Fehler: '+(d.fehler||'Unbekannt'));
     else updateTestStatus();
-  });
+  }).catch(function(e){dbg('Test error: '+e);});
 }
 
 function updateTestStatus(){
@@ -1228,46 +1381,63 @@ function updateTestStatus(){
   if(!el)return;
   fetch('/api/test/status').then(function(r){return r.json();}).then(function(d){
     if(d.aktiv){
-      var m=Math.floor(d.verbleibend_sekunden/60),s=d.verbleibend_sekunden%60;
-      el.innerHTML='<span class="c-orange">Test laeuft: '+d.typ+' ('+m+':'+String(s).padStart(2,'0')+' verbleibend)</span>';
+      var m=Math.floor(sn(d.verbleibend_sekunden)/60);
+      var s=sn(d.verbleibend_sekunden)%60;
+      el.innerHTML='<span class="c-orange">Test l&auml;uft: '+esc(d.typ)+' ('+m+':'+String(s).padStart(2,'0')+' verbleibend)</span>';
     } else {
       el.innerHTML='Kein Test aktiv';
     }
-  }).catch(function(){});
+  }).catch(function(){if(el)el.innerHTML='';});
+}
+
+function loadLogArchiv(){
+  var el=document.getElementById('log-archiv');
+  if(!el)return;
+  fetch('/api/logs/archiv').then(function(r){return r.json();}).then(function(d){
+    var arch=d.archive||[];
+    if(arch.length===0){el.innerHTML='Keine Archive';return;}
+    var h='';
+    for(var i=0;i<arch.length;i++){
+      h+='<div class="row"><span class="label">'+esc(arch[i].datum)+'</span>';
+      h+='<span class="val c-dim">'+sf(sn(arch[i].groesse_kb),1)+' KB</span></div>';
+    }
+    el.innerHTML=h;
+  }).catch(function(){if(el)el.innerHTML='Fehler';});
 }
 
 function exportJSON(){
-  fetch('/api/export').then(function(r){return r.json();}).then(function(d){
+  fetch(iq('/api/export')).then(function(r){return r.json();}).then(function(d){
     var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
-    a.href=url;a.download='genesis_export.json';a.click();
+    a.href=url;a.download='genesis_export_'+CI+'.json';a.click();
     URL.revokeObjectURL(url);
-  });
+  }).catch(function(e){dbg('Export error: '+e);});
 }
 function exportLogs(){
   fetch('/api/logs/export').then(function(r){return r.blob();}).then(function(blob){
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
-    a.href=url;a.download='genesis_log.txt';a.click();
+    a.href=url;a.download='genesis_log_'+CI+'.txt';a.click();
     URL.revokeObjectURL(url);
-  });
+  }).catch(function(e){dbg('Log export error: '+e);});
 }
 
-/* === Main Update Loop === */
+/* ============================================ */
+/* === MAIN UPDATE LOOP                     === */
+/* ============================================ */
 function update(){
   fetch(iq('/api/status')).then(function(r){return r.json();}).then(function(d){
     LS=d;
     setBadge(d.genesis_status||'tot');
-    if(CT==='dashboard') renderDash(d);
-    else if(CT==='koerper') renderKoerper(d);
-    else if(CT==='verhalten') loadVerhalten();
-    if(CT==='steuerung') updateTestStatus();
+    if(CT==='home')renderHome(d);
+    else if(CT==='koerper')renderKoerper(d);
+    if(CT==='ctrl')updateTestStatus();
   }).catch(function(err){
     setBadge('tot');
-    if(CT==='dashboard'){
-      document.getElementById('dashboard-content').innerHTML=
-        '<div class="card"><div class="big c-red">Verbindung verloren</div><div style="text-align:center;color:var(--text2);font-size:12px;margin-top:8px">'+err+'</div></div>';
+    if(CT==='home'){
+      var el=document.getElementById('home-content');
+      if(el)el.innerHTML='<div class="card"><div class="big c-red">Verbindung verloren</div><div style="text-align:center;color:var(--text2);font-size:12px;margin-top:8px">'+esc(err)+'</div></div>';
     }
   });
 }
@@ -1279,8 +1449,6 @@ setInterval(update,2000);
 </script>
 </body>
 </html>"""
-
-
 class GenesisHandler(BaseHTTPRequestHandler):
     """HTTP-Handler für das Genesis Web-Dashboard."""
 
