@@ -53,3 +53,18 @@
 - Genesis 2-3 Tage sauber laufen lassen
 - Erste echte Baseline-Daten sammeln
 - Tägliche Gute-Nacht-Konsolidierung
+
+---
+
+## 2026-03-15 — Stresstests vorbereitet
+
+### Fakten
+- Genesis läuft stabil seit Reset (Tag 2), 65 Langzeit-Muster, 26 sinnvolle Muster ohne Reflex
+- Keine Auffälligkeiten, keine überraschenden Verhaltensweisen
+- Baseline-Daten ausreichend — Verhalten ist vorhersagbar und konsistent
+- Stresstests vorbereitet: CPU, RAM, Kombination
+
+### Entscheidung
+- Baseline reicht aus, mehr Daten vom gleichen Verhalten bringen keinen Erkenntnisgewinn
+- Stresstests starten heute um zu sehen ob Genesis auf Umweltstress reagiert
+- Vorhersagen VORHER dokumentiert (VORHERSAGEN.md)

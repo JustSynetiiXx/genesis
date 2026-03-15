@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -32,6 +34,9 @@ _LOG_DATEI: Path = _PROJEKT_WURZEL / "shared" / "genesis_log.txt"
 _LOG_DATEI_PROD: Path = Path("/opt/genesis/shared/genesis_log.txt")
 _LOG_VERZEICHNIS: Path = Path("/opt/genesis/shared")
 _SIGNAL_DATEI: Path = _PROJEKT_WURZEL / "shared" / "signal.txt"
+_TEST_MARKER_DATEI: Path = Path("/opt/genesis/shared/test_marker.txt")
+_TEST_MARKER_LOKAL: Path = _PROJEKT_WURZEL / "shared" / "test_marker.txt"
+_SCRIPTS_DIR: Path = _PROJEKT_WURZEL / "scripts"
 
 # DB-Pfade (Read-Only Zugriff!)
 _LANGZEIT_DB: Path = Path("/var/lib/genesis/langzeit.db")
@@ -372,6 +377,151 @@ def _log_rotation_thread() -> None:
         except Exception:
             pass
         time.sleep(60)
+
+
+# --- Stresstest-Management ---
+
+_aktiver_test_prozess: subprocess.Popen[bytes] | None = None
+_aktiver_test_typ: str = ""
+_aktiver_test_start: float = 0.0
+_aktiver_test_dauer: int = 0
+
+
+def _test_marker_pfad() -> Path:
+    """Gibt den Pfad zur test_marker.txt zurück (Prod oder lokal)."""
+    if _TEST_MARKER_DATEI.parent.exists():
+        return _TEST_MARKER_DATEI
+    return _TEST_MARKER_LOKAL
+
+
+def _api_test_status() -> dict[str, Any]:
+    """Gibt zurück ob gerade ein Test läuft."""
+    global _aktiver_test_prozess, _aktiver_test_typ, _aktiver_test_start, _aktiver_test_dauer
+    if _aktiver_test_prozess is not None:
+        if _aktiver_test_prozess.poll() is not None:
+            # Prozess ist beendet
+            _aktiver_test_prozess = None
+            _aktiver_test_typ = ""
+            _aktiver_test_start = 0.0
+            _aktiver_test_dauer = 0
+            return {"aktiv": False}
+        vergangen: float = time.time() - _aktiver_test_start
+        verbleibend: float = max(0, _aktiver_test_dauer - vergangen)
+        return {
+            "aktiv": True,
+            "typ": _aktiver_test_typ,
+            "start": datetime.fromtimestamp(_aktiver_test_start).isoformat(),
+            "verbleibend_sekunden": int(verbleibend),
+        }
+    return {"aktiv": False}
+
+
+def _api_test_start(test_typ: str, dauer: int = 600, mb: int = 1000) -> dict[str, Any]:
+    """Startet einen Stresstest im Hintergrund.
+
+    Args:
+        test_typ: 'cpu', 'ram' oder 'kombi'.
+        dauer: Dauer in Sekunden.
+        mb: MB RAM (nur für ram/kombi).
+
+    Returns:
+        Status-Dict.
+    """
+    global _aktiver_test_prozess, _aktiver_test_typ, _aktiver_test_start, _aktiver_test_dauer
+
+    # Prüfe ob schon ein Test läuft
+    status = _api_test_status()
+    if status["aktiv"]:
+        return {"ok": False, "fehler": f"Test '{status['typ']}' läuft bereits"}
+
+    # Skript-Pfad bestimmen
+    skript_map: dict[str, str] = {
+        "cpu": "stress_cpu.py",
+        "ram": "stress_ram.py",
+        "kombi": "stress_kombi.py",
+    }
+    if test_typ not in skript_map:
+        return {"ok": False, "fehler": f"Unbekannter Testtyp: {test_typ}"}
+
+    skript: Path = _SCRIPTS_DIR / skript_map[test_typ]
+    if not skript.exists():
+        return {"ok": False, "fehler": f"Skript nicht gefunden: {skript}"}
+
+    # Kommando zusammenbauen
+    cmd: list[str] = [sys.executable, str(skript), "--dauer", str(dauer)]
+    if test_typ in ("ram", "kombi"):
+        cmd.extend(["--mb", str(mb)])
+
+    # TEST_START Marker schreiben
+    marker: Path = _test_marker_pfad()
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    zeitstempel: str = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    with open(marker, "a", encoding="utf-8") as f:
+        f.write(f"TEST_START:{test_typ}:{zeitstempel}:{dauer}\n")
+
+    # Prozess starten
+    _aktiver_test_prozess = subprocess.Popen(
+        cmd,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    _aktiver_test_typ = test_typ
+    _aktiver_test_start = time.time()
+    _aktiver_test_dauer = dauer
+
+    # Hintergrund-Thread für TEST_ENDE Marker
+    def _warte_auf_ende() -> None:
+        global _aktiver_test_prozess
+        if _aktiver_test_prozess is not None:
+            _aktiver_test_prozess.wait()
+        ende_zeit: str = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        with open(marker, "a", encoding="utf-8") as f:
+            f.write(f"TEST_ENDE:{test_typ}:{ende_zeit}\n")
+
+    threading.Thread(target=_warte_auf_ende, daemon=True).start()
+
+    return {"ok": True, "typ": test_typ, "dauer": dauer}
+
+
+def _api_test_logs() -> dict[str, Any]:
+    """Liest test_marker.txt, findet den letzten Test, gibt Logs im Zeitraum zurück."""
+    marker: Path = _test_marker_pfad()
+    if not marker.exists():
+        return {"fehler": "Keine Tests durchgeführt"}
+
+    zeilen: list[str] = marker.read_text(encoding="utf-8").strip().splitlines()
+
+    # Letzten TEST_START und TEST_ENDE finden
+    letzter_start: str | None = None
+    letztes_ende: str | None = None
+    test_typ: str = ""
+    dauer_sek: int = 0
+
+    for zeile in reversed(zeilen):
+        if zeile.startswith("TEST_ENDE:") and letztes_ende is None:
+            teile = zeile.split(":")
+            letztes_ende = ":".join(teile[2:])
+        if zeile.startswith("TEST_START:") and letzter_start is None:
+            teile = zeile.split(":")
+            test_typ = teile[1]
+            letzter_start = ":".join(teile[2:-1])
+            dauer_sek = int(teile[-1]) if teile[-1].isdigit() else 600
+            break
+
+    if letzter_start is None:
+        return {"fehler": "Kein Test gefunden"}
+
+    # Logs im Zeitraum filtern
+    alle_logs: list[str] = _lese_logs(500)
+    # Logs sind neueste zuerst — wir geben sie so zurück
+    return {
+        "test_typ": test_typ,
+        "start": letzter_start,
+        "ende": letztes_ende,
+        "dauer_sekunden": dauer_sek,
+        "logs": alle_logs,
+    }
 
 
 HTML_SEITE: str = """\
@@ -809,6 +959,31 @@ body {
 }
 .ep-explore { background: rgba(255,204,0,0.1); color: var(--yellow); }
 .ep-exploit { background: rgba(0,255,0,0.1); color: var(--green); }
+
+/* Stresstest */
+.btn-stress { border-color: rgba(255,136,0,0.3); color: var(--orange); }
+.btn-stress:hover { background: rgba(255,136,0,0.08); }
+.btn-stress:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-stress:disabled:active { transform: none; }
+.test-banner {
+    background: linear-gradient(135deg, rgba(255,136,0,0.15), rgba(255,68,68,0.1));
+    border: 1px solid rgba(255,136,0,0.3);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--orange);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: pulse-border 2s infinite;
+}
+@keyframes pulse-border { 50% { border-color: rgba(255,136,0,0.6); } }
+.test-log-highlight {
+    border-left: 3px solid var(--yellow);
+    padding-left: 8px;
+}
 </style>
 </head>
 <body>
@@ -852,6 +1027,7 @@ body {
 <!-- Tab: Logs -->
 <div class="page" id="page-logs">
     <div class="page-header"><span class="page-title">Logs</span></div>
+    <div id="test-banner-logs" style="display:none"></div>
     <div class="log-hint">Logs werden täglich um 00:00 rotiert</div>
     <div class="log-panel" id="log-panel">
         <div id="log-content"></div>
@@ -877,6 +1053,16 @@ body {
         <div class="controls">
             <button class="btn-good" id="btn-good" onclick="sendSignal('good')">Gut</button>
             <button class="btn-bad" id="btn-bad" onclick="sendSignal('bad')">Schlecht</button>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">Stresstests</div>
+        <div id="test-status-ctrl"></div>
+        <div class="controls">
+            <button class="btn-stress" id="btn-test-cpu" onclick="starteTest('cpu')">CPU-Test</button>
+            <button class="btn-stress" id="btn-test-ram" onclick="starteTest('ram')">RAM-Test</button>
+            <button class="btn-stress" id="btn-test-kombi" onclick="starteTest('kombi')">Kombi-Test</button>
+            <button class="btn-export" onclick="exportTestLogs()">Test-Logs (JSON)</button>
         </div>
     </div>
     <div class="card">
@@ -1304,6 +1490,44 @@ function exportLogs(){
     });
 }
 
+/* --- Stresstests --- */
+function starteTest(typ){
+    if(!confirm('Stresstest "'+typ+'" starten?')) return;
+    fetch('/api/test/'+typ,{method:'POST'}).then(function(r){return r.json();}).then(function(d){
+        if(!d.ok) alert('Fehler: '+d.fehler);
+    });
+}
+function exportTestLogs(){
+    fetch('/api/logs/test').then(function(r){return r.json();}).then(function(d){
+        var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement('a');
+        a.href=url;a.download='genesis_test_logs.json';a.click();
+        URL.revokeObjectURL(url);
+    });
+}
+function fmtVerbleibend(sek){
+    var m=Math.floor(sek/60),s=sek%60;
+    return m+':'+String(s).padStart(2,'0');
+}
+function aktualisiereTestStatus(){
+    fetch('/api/test/status').then(function(r){return r.json();}).then(function(d){
+        var btns=document.querySelectorAll('.btn-stress');
+        var statusEl=document.getElementById('test-status-ctrl');
+        var bannerEl=document.getElementById('test-banner-logs');
+        if(d.aktiv){
+            for(var i=0;i<btns.length;i++){btns[i].disabled=true;}
+            var txt='Test läuft: '+d.typ.toUpperCase()+' (noch '+fmtVerbleibend(d.verbleibend_sekunden)+')';
+            if(statusEl)statusEl.innerHTML='<div class="test-banner">⚡ '+txt+'</div>';
+            if(bannerEl){bannerEl.style.display='block';bannerEl.innerHTML='<div class="test-banner">⚡ TEST AKTIV: '+d.typ.toUpperCase()+'-Stress (noch '+fmtVerbleibend(d.verbleibend_sekunden)+')</div>';}
+        } else {
+            for(var j=0;j<btns.length;j++){btns[j].disabled=false;}
+            if(statusEl)statusEl.innerHTML='';
+            if(bannerEl){bannerEl.style.display='none';bannerEl.innerHTML='';}
+        }
+    }).catch(function(){});
+}
+
 /* --- Archiv --- */
 function ladeArchiv(){
     fetch('/api/logs/archiv').then(function(r){return r.json();}).then(function(d){
@@ -1349,6 +1573,7 @@ function aktualisiere(){
     if(currentTab==='gedaechtnis')ladeGedaechtnis();
     if(currentTab==='verhalten')ladeVerhalten();
     if(currentTab==='phasen')ladePhasen();
+    aktualisiereTestStatus();
 }
 aktualisiere();
 setInterval(aktualisiere,2000);
@@ -1383,6 +1608,10 @@ class GenesisHandler(BaseHTTPRequestHandler):
             self._sende_json(_api_logs_archiv())
         elif self.path.startswith("/api/logs/archiv/"):
             self._sende_archiv_log()
+        elif self.path == "/api/test/status":
+            self._sende_json(_api_test_status())
+        elif self.path == "/api/logs/test":
+            self._sende_json(_api_test_logs())
         else:
             self._sende_html()
 
@@ -1423,6 +1652,10 @@ class GenesisHandler(BaseHTTPRequestHandler):
         elif self.path == "/api/control/restart":
             _schreibe_signal(f"SLEEP {time.time():.0f}")
             antwort = {"ok": True, "aktion": "restart"}
+
+        elif self.path in ("/api/test/cpu", "/api/test/ram", "/api/test/kombi"):
+            test_typ: str = self.path.split("/")[-1]
+            antwort = _api_test_start(test_typ)
 
         self._sende_json(antwort)
 
@@ -1471,7 +1704,6 @@ class GenesisHandler(BaseHTTPRequestHandler):
         # Datum aus Pfad extrahieren: /api/logs/archiv/YYYY-MM-DD
         datum: str = self.path.split("/")[-1]
         # Validierung: nur YYYY-MM-DD Format erlauben
-        import re
         if not re.match(r"^\d{4}-\d{2}-\d{2}$", datum):
             self._sende_json({"fehler": "Ungültiges Datum"})
             return
