@@ -101,9 +101,8 @@ def einschlafen(kurzzeit: KurzzeitGedaechtnis,
     1. Konsolidierung: Kurzzeit → Langzeit
     2. Kurzzeitgedächtnis leeren
     3. Schlaf-Marker in Heartbeat setzen
-    4. Tod-Tabelle: war_schlaf = True
-    5. READY-Signal schreiben
-    6. Prozess kann danach beendet werden
+    4. READY-Signal schreiben
+    5. Prozess kann danach beendet werden
 
     Args:
         kurzzeit: Kurzzeitgedächtnis.
@@ -125,16 +124,7 @@ def einschlafen(kurzzeit: KurzzeitGedaechtnis,
     # 3. Schlaf-Marker setzen
     heartbeat.aktualisiere(letzter_zustand, letzter_schmerz, schlaf_marker=True)
 
-    # 4. Tod-Tabelle
-    langzeit.speichere_tod(
-        zeitstempel_tod=time.time(),
-        zeitstempel_aufwachen=0.0,  # Wird beim Aufwachen aktualisiert
-        letzter_zustand=letzter_zustand,
-        letzter_schmerz=letzter_schmerz,
-        war_schlaf=True,
-    )
-
-    # 5. READY-Signal schreiben
+    # 4. READY-Signal schreiben
     try:
         signal_pfad.write_text("READY\n")
     except OSError:
