@@ -1,6 +1,7 @@
-"""Web-Dashboard für Genesis — Mobile-optimiert, Multi-Page.
+"""Web-Dashboard für Genesis — Mobile-optimiert, Multi-Page, Multi-Instance.
 
 Zeigt Genesis-Status im Browser an. Liest nur, beeinflusst Genesis nicht.
+Unterstützt mehrere Genesis-Instanzen via ?instance= Query-Parameter.
 
 Starten:
     python3 -m host.ekg.web_dashboard
@@ -24,6 +25,7 @@ from datetime import datetime, date
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse, parse_qs
 
 # Pfade
 _PROJEKT_WURZEL: Path = Path(__file__).resolve().parent.parent.parent
@@ -37,10 +39,81 @@ _SIGNAL_DATEI: Path = _PROJEKT_WURZEL / "shared" / "signal.txt"
 _TEST_MARKER_DATEI: Path = Path("/opt/genesis/shared/test_marker.txt")
 _TEST_MARKER_LOKAL: Path = _PROJEKT_WURZEL / "shared" / "test_marker.txt"
 _SCRIPTS_DIR: Path = _PROJEKT_WURZEL / "scripts"
+_UMGEBUNG_STATUS_DATEI: Path = Path("/opt/genesis/shared/umgebung_status.json")
 
 # DB-Pfade (Read-Only Zugriff!)
 _LANGZEIT_DB: Path = Path("/var/lib/genesis/langzeit.db")
 _KURZZEIT_DB: Path = Path("/var/lib/genesis/kurzzeit.db")
+
+
+# --- Multi-Instance Support ---
+
+def _lade_instanzen() -> dict[str, dict[str, Any]]:
+    """Lädt Instanz-Konfigurationen."""
+    try:
+        from vm.config_instances import INSTANCES
+        return INSTANCES
+    except ImportError:
+        return {
+            "genesis-1": {
+                "db_pfad": "/var/lib/genesis/",
+                "shared_pfad": "/opt/genesis/shared/",
+                "beschreibung": "Standard-Instanz",
+            }
+        }
+
+
+def _instanz_pfade(instanz: str) -> tuple[Path, Path, Path, Path, Path]:
+    """Gibt (status_datei, log_datei, langzeit_db, kurzzeit_db, signal_datei) für eine Instanz zurück."""
+    instanzen = _lade_instanzen()
+    if instanz not in instanzen:
+        instanz = "genesis-1"
+    cfg = instanzen[instanz]
+    shared = Path(cfg["shared_pfad"])
+    db = Path(cfg["db_pfad"])
+    return (
+        shared / "genesis_status.json",
+        shared / "genesis_log.txt",
+        db / "langzeit.db",
+        db / "kurzzeit.db",
+        shared / "signal.txt",
+    )
+
+
+def _api_instances() -> dict[str, Any]:
+    """Gibt alle Instanzen mit ihrem aktuellen Status zurück."""
+    instanzen = _lade_instanzen()
+    ergebnis: list[dict[str, Any]] = []
+    for name, cfg in instanzen.items():
+        shared = Path(cfg["shared_pfad"])
+        status_pfad = shared / "genesis_status.json"
+        # Status lesen
+        status_text = "tot"
+        schmerz = 0.0
+        phase = "?"
+        wach_seit = 0
+        try:
+            daten = json.loads(status_pfad.read_bytes())
+            alter = time.time() - daten.get("zeitstempel", 0)
+            schmerz = daten.get("schmerz", 0.0)
+            umg = daten.get("umgebung") or {}
+            phase = umg.get("phase", "?")
+            wach_seit = daten.get("wach_seit", 0)
+            if alter < 5:
+                status_text = "lebt"
+            elif alter < 30:
+                status_text = "schlaeft"
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            pass
+        ergebnis.append({
+            "name": name,
+            "beschreibung": cfg.get("beschreibung", ""),
+            "status": status_text,
+            "schmerz": round(schmerz, 4),
+            "phase": phase,
+            "wach_seit": wach_seit,
+        })
+    return {"instanzen": ergebnis}
 
 # Sensor-Leser importieren
 _leser_modul: Any = None
@@ -60,10 +133,13 @@ def _lade_leser() -> Any:
     return modul
 
 
-def _lese_genesis_status() -> dict[str, Any] | None:
+def _lese_genesis_status(instanz: str | None = None) -> dict[str, Any] | None:
     """Liest genesis_status.json atomar."""
+    pfad = _STATUS_DATEI
+    if instanz:
+        pfad = _instanz_pfade(instanz)[0]
     try:
-        return json.loads(_STATUS_DATEI.read_bytes())
+        return json.loads(pfad.read_bytes())
     except (FileNotFoundError, json.JSONDecodeError, OSError):
         return None
 
@@ -76,34 +152,43 @@ def _lese_sensoren() -> dict[str, Any] | None:
     return leser.lese_sensoren(_SENSOR_DATEI)
 
 
-def _lese_logs(n: int = 50) -> list[str]:
+def _lese_logs(n: int = 50, instanz: str | None = None) -> list[str]:
     """Liest die letzten n Log-Zeilen aus genesis_log.txt."""
+    pfad = _LOG_DATEI
+    if instanz:
+        pfad = _instanz_pfade(instanz)[1]
     try:
-        zeilen: list[str] = _LOG_DATEI.read_text(encoding="utf-8").splitlines()
+        zeilen: list[str] = pfad.read_text(encoding="utf-8").splitlines()
         # Neueste zuerst
         return list(reversed(zeilen[-n:]))
     except (FileNotFoundError, OSError):
         return []
 
 
-def _schreibe_signal(signal_text: str) -> None:
+def _schreibe_signal(signal_text: str, instanz: str | None = None) -> None:
     """Schreibt ein Signal in signal.txt."""
-    _SIGNAL_DATEI.parent.mkdir(parents=True, exist_ok=True)
-    _SIGNAL_DATEI.write_text(signal_text + "\n", encoding="utf-8")
+    pfad = _SIGNAL_DATEI
+    if instanz:
+        pfad = _instanz_pfade(instanz)[4]
+    pfad.parent.mkdir(parents=True, exist_ok=True)
+    pfad.write_text(signal_text + "\n", encoding="utf-8")
 
 
-def _genesis_lebt() -> str:
+def _genesis_lebt(instanz: str | None = None) -> str:
     """Prüft ob Genesis lebt. Gibt 'lebt', 'schlaeft' oder 'tot' zurück."""
     # Schlaf-Signal prüfen
+    signal_pfad = _SIGNAL_DATEI
+    if instanz:
+        signal_pfad = _instanz_pfade(instanz)[4]
     try:
-        signal_inhalt: str = _SIGNAL_DATEI.read_text(encoding="utf-8").strip()
+        signal_inhalt: str = signal_pfad.read_text(encoding="utf-8").strip()
         if signal_inhalt.startswith("SLEEP"):
             return "schlaeft"
     except (FileNotFoundError, OSError):
         pass
 
     # Status-Zeitstempel prüfen
-    status: dict[str, Any] | None = _lese_genesis_status()
+    status: dict[str, Any] | None = _lese_genesis_status(instanz)
     if status is None:
         return "tot"
     alter: float = time.time() - status.get("zeitstempel", 0)
@@ -114,14 +199,15 @@ def _genesis_lebt() -> str:
     return "tot"
 
 
-def _api_daten() -> dict[str, Any]:
+def _api_daten(instanz: str | None = None) -> dict[str, Any]:
     """Kombiniert Genesis-Status und Sensordaten für die API."""
-    status = _lese_genesis_status()
+    status = _lese_genesis_status(instanz)
     sensoren = _lese_sensoren()
     return {
         "genesis": status,
         "sensoren": sensoren,
-        "genesis_status": _genesis_lebt(),
+        "genesis_status": _genesis_lebt(instanz),
+        "instanz": instanz or "genesis-1",
     }
 
 
@@ -139,9 +225,12 @@ def _db_readonly(pfad: Path) -> sqlite3.Connection | None:
         return None
 
 
-def _api_langzeit() -> dict[str, Any]:
+def _api_langzeit(instanz: str | None = None) -> dict[str, Any]:
     """Liest ALLE Einträge aus langzeit.db Tabelle 'gelernt'."""
-    conn = _db_readonly(_LANGZEIT_DB)
+    db_pfad = _LANGZEIT_DB
+    if instanz:
+        db_pfad = _instanz_pfade(instanz)[2]
+    conn = _db_readonly(db_pfad)
     if conn is None:
         return {"eintraege": [], "gesamt": 0}
     try:
@@ -165,9 +254,12 @@ def _api_langzeit() -> dict[str, Any]:
         conn.close()
 
 
-def _api_tode() -> dict[str, Any]:
+def _api_tode(instanz: str | None = None) -> dict[str, Any]:
     """Liest ALLE Einträge aus langzeit.db Tabelle 'tode'."""
-    conn = _db_readonly(_LANGZEIT_DB)
+    db_pfad = _LANGZEIT_DB
+    if instanz:
+        db_pfad = _instanz_pfade(instanz)[2]
+    conn = _db_readonly(db_pfad)
     if conn is None:
         return {"tode": [], "gesamt_tode": 0, "gesamt_schlaf": 0}
     try:
@@ -198,9 +290,12 @@ def _api_tode() -> dict[str, Any]:
         conn.close()
 
 
-def _api_kurzzeit_stats() -> dict[str, Any]:
+def _api_kurzzeit_stats(instanz: str | None = None) -> dict[str, Any]:
     """Berechnet Aktions-Statistiken aus kurzzeit.db."""
-    conn = _db_readonly(_KURZZEIT_DB)
+    db_pfad = _KURZZEIT_DB
+    if instanz:
+        db_pfad = _instanz_pfade(instanz)[3]
+    conn = _db_readonly(db_pfad)
     if conn is None:
         return {"aktionen": {}, "gesamt": 0}
     try:
@@ -223,12 +318,12 @@ def _api_kurzzeit_stats() -> dict[str, Any]:
         conn.close()
 
 
-def _api_phasen() -> dict[str, Any]:
+def _api_phasen(instanz: str | None = None) -> dict[str, Any]:
     """Berechnet den Phasen-Status basierend auf verfügbaren Daten."""
-    langzeit = _api_langzeit()
-    tode = _api_tode()
-    kurzzeit = _api_kurzzeit_stats()
-    status = _lese_genesis_status()
+    langzeit = _api_langzeit(instanz)
+    tode = _api_tode(instanz)
+    kurzzeit = _api_kurzzeit_stats(instanz)
+    status = _lese_genesis_status(instanz)
 
     # Phase 2: Beobachtung
     phase2: dict[str, Any] = {
@@ -300,34 +395,39 @@ def _lade_config() -> dict[str, Any]:
         return {"fehler": "vm.config nicht verfügbar"}
 
 
-def _api_umgebung() -> dict[str, Any]:
-    """Liest Umgebungsdaten aus dem Genesis-Status."""
-    status = _lese_genesis_status()
-    if status is None:
-        return {"fehler": "Genesis nicht erreichbar"}
-    umg = status.get("umgebung")
-    if umg is None:
+def _api_umgebung(instanz: str | None = None) -> dict[str, Any]:
+    """Liest Umgebungsdaten aus dem Genesis-Status oder umgebung_status.json."""
+    # Zuerst aus Genesis-Status lesen (hat instanz-spezifische Daten)
+    status = _lese_genesis_status(instanz)
+    if status is not None:
+        umg = status.get("umgebung")
+        if umg is not None:
+            return umg
+    # Fallback: Direkt aus umgebung_status.json lesen
+    try:
+        return json.loads(_UMGEBUNG_STATUS_DATEI.read_bytes())
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
         return {"fehler": "Keine Umgebungsdaten verfügbar"}
-    return umg
 
 
-def _api_export() -> dict[str, Any]:
+def _api_export(instanz: str | None = None) -> dict[str, Any]:
     """Komplett-Dump aller Daten als JSON für externe Analyse."""
-    tode = _api_tode()
+    tode = _api_tode(instanz)
     return {
         "export_zeitstempel": datetime.now().isoformat(),
         "genesis_version": "Phase 2 — Beobachtung",
-        "aktueller_status": _api_daten(),
-        "langzeit_gedaechtnis": _api_langzeit(),
+        "instanz": instanz or "genesis-1",
+        "aktueller_status": _api_daten(instanz),
+        "langzeit_gedaechtnis": _api_langzeit(instanz),
         "tod_historie": {
             "ereignisse": tode["tode"],
             "gesamt_tode": tode["gesamt_tode"],
             "gesamt_schlaf": tode["gesamt_schlaf"],
         },
-        "kurzzeit_statistik": _api_kurzzeit_stats(),
-        "phasen_status": _api_phasen(),
+        "kurzzeit_statistik": _api_kurzzeit_stats(instanz),
+        "phasen_status": _api_phasen(instanz),
         "config": _lade_config(),
-        "logs": _lese_logs(200),
+        "logs": _lese_logs(200, instanz),
     }
 
 
@@ -999,6 +1099,18 @@ body {
 </head>
 <body>
 
+<!-- Instance Switcher -->
+<div id="instance-switcher" style="display:none;padding:6px 10px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06)">
+    <select id="instance-select" style="background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 12px;font-size:13px;font-family:var(--sans);width:100%">
+    </select>
+</div>
+
+<!-- Tab: Übersicht -->
+<div class="page" id="page-uebersicht">
+    <div class="page-header"><span class="page-title">Übersicht</span></div>
+    <div id="uebersicht-content"><div class="c-dim" style="text-align:center;padding:40px">Lade...</div></div>
+</div>
+
 <!-- Tab: Dashboard -->
 <div class="page active" id="page-dashboard">
     <div class="page-header">
@@ -1097,6 +1209,7 @@ body {
 
 <!-- Tab-Bar -->
 <nav class="tab-bar">
+    <a class="tab" onclick="switchTab('uebersicht')"><span class="icon">👁️</span>Alle</a>
     <a class="tab active" onclick="switchTab('dashboard')"><span class="icon">📊</span>Home</a>
     <a class="tab" onclick="switchTab('koerper')"><span class="icon">🫀</span>Körper</a>
     <a class="tab" onclick="switchTab('gedaechtnis')"><span class="icon">🧠</span>Memory</a>
@@ -1108,6 +1221,33 @@ body {
 </nav>
 
 <script>
+/* --- Multi-Instance --- */
+var currentInstance = 'genesis-1';
+var instanceList = [];
+function iq(url){
+    var sep=url.indexOf('?')>=0?'&':'?';
+    return url+sep+'instance='+encodeURIComponent(currentInstance);
+}
+function initInstances(){
+    fetch('/api/instances').then(function(r){return r.json();}).then(function(d){
+        instanceList=d.instanzen||[];
+        var sel=document.getElementById('instance-select');
+        sel.innerHTML='';
+        for(var i=0;i<instanceList.length;i++){
+            var o=document.createElement('option');
+            o.value=instanceList[i].name;
+            o.textContent=instanceList[i].name+' — '+instanceList[i].beschreibung;
+            if(instanceList[i].name===currentInstance)o.selected=true;
+            sel.appendChild(o);
+        }
+        if(instanceList.length>1){
+            document.getElementById('instance-switcher').style.display='block';
+        }
+        sel.onchange=function(){currentInstance=this.value;aktualisiere();};
+    });
+}
+initInstances();
+
 /* --- Navigation --- */
 var currentTab = 'dashboard';
 function switchTab(name) {
@@ -1115,9 +1255,10 @@ function switchTab(name) {
     document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
     document.getElementById('page-'+name).classList.add('active');
     var tabs = document.querySelectorAll('.tab');
-    var names = ['dashboard','koerper','gedaechtnis','verhalten','umgebung','phasen','logs','steuerung'];
+    var names = ['uebersicht','dashboard','koerper','gedaechtnis','verhalten','umgebung','phasen','logs','steuerung'];
     for (var i=0;i<names.length;i++) if (names[i]===name) tabs[i].classList.add('active');
     currentTab = name;
+    if (name==='uebersicht') ladeUebersicht();
     if (name==='gedaechtnis') ladeGedaechtnis();
     if (name==='verhalten') ladeVerhalten();
     if (name==='umgebung') ladeUmgebung();
@@ -1195,6 +1336,33 @@ function setBadge(gStatus){
     }
 }
 
+/* --- Übersicht Tab --- */
+function ladeUebersicht(){
+    fetch('/api/instances').then(function(r){return r.json();}).then(function(d){
+        var el=document.getElementById('uebersicht-content'),h='';
+        var inst=d.instanzen||[];
+        if(inst.length===0){el.innerHTML='<div class="c-dim">Keine Instanzen</div>';return;}
+        for(var i=0;i<inst.length;i++){
+            var n=inst[i],sC=n.status==='lebt'?'c-green':n.status==='schlaeft'?'c-yellow':'c-red';
+            var sL=n.status==='lebt'?'lebt':n.status==='schlaeft'?'schläft':'tot';
+            var phL={'embryo':'Embryo','fetus_frueh':'Fetus (früh)','fetus_spaet':'Fetus (spät)','reif':'Reif'};
+            var phC={'embryo':'c-cyan','fetus_frueh':'c-yellow','fetus_spaet':'c-orange','reif':'c-green'};
+            var sF=n.schmerz<0.15?'c-green':n.schmerz<0.35?'c-yellow':n.schmerz<0.6?'c-orange':'c-red';
+            h+='<div class="card" style="cursor:pointer" onclick="currentInstance=\''+n.name+'\';document.getElementById(\'instance-select\').value=\''+n.name+'\';switchTab(\'dashboard\')">';
+            h+='<div class="card-title" style="display:flex;justify-content:space-between">';
+            h+='<span>'+n.name+'</span>';
+            h+='<span class="'+sC+'" style="text-transform:uppercase;font-size:10px">'+sL+'</span>';
+            h+='</div>';
+            h+='<div class="row"><span class="label">Schmerz</span><span class="value '+sF+'">'+n.schmerz.toFixed(3)+'</span></div>';
+            h+='<div class="row"><span class="label">Phase</span><span class="value '+(phC[n.phase]||'c-dim')+'">'+(phL[n.phase]||n.phase)+'</span></div>';
+            h+='<div class="row"><span class="label">Wach seit</span><span class="value c-text">'+wachZeit(n.wach_seit)+'</span></div>';
+            h+='<div style="font-size:12px;color:var(--text-secondary);margin-top:4px">'+n.beschreibung+'</div>';
+            h+='</div>';
+        }
+        el.innerHTML=h;
+    }).catch(function(){});
+}
+
 /* --- Dashboard Tab --- */
 function renderDashboard(daten){
     var g=daten.genesis,el=document.getElementById('dashboard-content');
@@ -1243,8 +1411,10 @@ function renderDashboard(daten){
         h+='<div class="card"><div class="card-title">Umgebung</div>';
         h+='<div class="row"><span class="label">Phase</span><span class="value '+(phC[umg.phase]||'c-dim')+'">'+(phL[umg.phase]||umg.phase)+'</span></div>';
         h+='<div class="row"><span class="label">Rhythmus</span><span class="value c-cyan">'+(umg.rhythmus_kategorie||'?')+' ('+Math.round((umg.rhythmus||0)*100)+'%)</span></div>';
-        h+='<div class="row"><span class="label">Zone</span><span class="value '+(umg.zone==='stress_zone'?'c-orange':umg.zone==='komfort_zone'?'c-green':'c-cyan')+'">'+({'komfort_zone':'Komfort','normal_zone':'Normal','stress_zone':'Stress'}[umg.zone]||umg.zone)+'</span></div>';
-        if(umg.reiz_aktiv) h+='<div class="row"><span class="label">Reiz</span><span class="value c-orange">'+umg.reiz_typ+'</span></div>';
+        var umgZone=umg.zone||umg.feedback_zone||'normal_zone';
+        h+='<div class="row"><span class="label">Zone</span><span class="value '+(umgZone==='stress_zone'?'c-orange':umgZone==='komfort_zone'?'c-green':'c-cyan')+'">'+({'komfort_zone':'Komfort','normal_zone':'Normal','stress_zone':'Stress'}[umgZone]||umgZone)+'</span></div>';
+        var umgReiz=umg.reiz_aktiv;
+        if(umgReiz&&umgReiz!==false&&umgReiz!==0) h+='<div class="row"><span class="label">Reiz</span><span class="value c-orange">'+(umg.reiz_typ||umgReiz)+'</span></div>';
         h+='</div>';
     }
     el.innerHTML=h;
@@ -1305,9 +1475,9 @@ function renderKoerper(daten){
 /* --- Gedächtnis Tab --- */
 function ladeGedaechtnis(){
     Promise.all([
-        fetch('/api/langzeit').then(function(r){return r.json();}),
-        fetch('/api/tode').then(function(r){return r.json();}),
-        fetch('/api/kurzzeit/stats').then(function(r){return r.json();})
+        fetch(iq('/api/langzeit')).then(function(r){return r.json();}),
+        fetch(iq('/api/tode')).then(function(r){return r.json();}),
+        fetch(iq('/api/kurzzeit/stats')).then(function(r){return r.json();})
     ]).then(function(res){
         var lang=res[0],tode=res[1],kurz=res[2];
         var el=document.getElementById('gedaechtnis-content'),h='';
@@ -1356,7 +1526,7 @@ function ladeGedaechtnis(){
 
 /* --- Verhalten Tab --- */
 function ladeVerhalten(){
-    fetch('/api/kurzzeit/stats').then(function(r){return r.json();}).then(function(kurz){
+    fetch(iq('/api/kurzzeit/stats')).then(function(r){return r.json();}).then(function(kurz){
         var el=document.getElementById('verhalten-content'),h='';
         var gData=_lastStatus;
         if(gData&&gData.genesis){
@@ -1403,19 +1573,20 @@ function ladeVerhalten(){
 
 /* --- Umgebung Tab --- */
 function ladeUmgebung(){
-    fetch('/api/umgebung').then(function(r){return r.json();}).then(function(u){
+    fetch(iq('/api/umgebung')).then(function(r){return r.json();}).then(function(u){
         var el=document.getElementById('umgebung-content'),h='';
         if(!u||u.fehler){
             el.innerHTML='<div class="c-dim" style="text-align:center;padding:40px">Keine Umgebungsdaten</div>';
             return;
         }
-        // Phase
+        // Phase (kompatibel mit altem und neuem Format)
         var phaseC={'embryo':'c-cyan','fetus_frueh':'c-yellow','fetus_spaet':'c-orange','reif':'c-green'};
         var phaseL={'embryo':'Embryo','fetus_frueh':'Fetus (früh)','fetus_spaet':'Fetus (spät)','reif':'Reif'};
+        var wachtage=u.wachtage||u.phase_tag||0;
         h+='<div class="card"><div class="card-title">Entwicklungsphase</div>';
         h+='<div class="big-number '+( phaseC[u.phase]||'c-dim')+'" style="font-size:24px">'+(phaseL[u.phase]||u.phase)+'</div>';
-        h+='<div class="row"><span class="label">Wachtage</span><span class="value c-cyan">'+u.wachtage.toFixed(2)+' Tage</span></div>';
-        var wS=u.wachzeit_sekunden||0;
+        h+='<div class="row"><span class="label">Wachtage</span><span class="value c-cyan">'+wachtage.toFixed(2)+' Tage</span></div>';
+        var wS=u.wachzeit_sekunden||(wachtage*86400);
         var wH=Math.floor(wS/3600),wM=Math.floor((wS%3600)/60);
         h+='<div class="row"><span class="label">Wachzeit</span><span class="value c-text">'+wH+'h '+wM+'m</span></div>';
         h+='</div>';
@@ -1433,24 +1604,27 @@ function ladeUmgebung(){
         h+='</div></div>';
         // Verfall + Nährstoffe
         h+='<div class="dual"><div class="card"><div class="card-title">Verfall</div>';
-        var vMB=u.verfall_mb||0.2;
+        var vMB=u.verfall_mb||u.verfall_modifikator||0.2;
         var vF=vMB<0.15?'c-green':vMB<0.25?'c-yellow':'c-orange';
         h+='<div class="big-number '+vF+'" style="font-size:20px">'+vMB.toFixed(3)+' MB/t</div>';
         h+='<div class="row"><span class="label">Mod</span><span class="value c-dim">×'+(u.verfall_mod||1).toFixed(2)+'</span></div>';
         h+='</div>';
         h+='<div class="card"><div class="card-title">Nährstoff</div>';
-        h+='<div class="big-number c-cyan" style="font-size:20px">'+(u.ticks_bis_schub||'?')+'</div>';
+        h+='<div class="big-number c-cyan" style="font-size:20px">'+(u.ticks_bis_schub||u.naechster_schub_in||'?')+'</div>';
         h+='<div style="text-align:center;font-size:11px;color:var(--text-secondary)">Ticks bis Schub</div>';
-        if(u.letzter_schub) h+='<div style="text-align:center;font-size:12px;color:var(--green);margin-top:4px">Schub: '+(u.schub_menge||0).toFixed(1)+' MB</div>';
+        if(u.letzter_schub||u.schub_aktiv) h+='<div style="text-align:center;font-size:12px;color:var(--green);margin-top:4px">Schub: '+(u.schub_menge||0).toFixed(1)+' MB</div>';
         h+='</div></div>';
-        // Reiz
+        // Reiz (kompatibel: reiz_aktiv kann bool oder string sein)
+        var reizAktiv=u.reiz_aktiv;
+        var reizTyp=u.reiz_typ||u.reiz_aktiv||null;
         h+='<div class="card"><div class="card-title">Aktiver Reiz</div>';
-        if(u.reiz_aktiv){
+        if(reizAktiv&&reizAktiv!==false&&reizAktiv!==0){
+            if(typeof reizAktiv==='string') reizTyp=reizAktiv;
             var rTypL={'vibration':'Vibration','waerme':'Wärme','druck':'Druck'};
             var rTypC={'vibration':'c-yellow','waerme':'c-orange','druck':'c-cyan'};
-            h+='<div class="big-number '+(rTypC[u.reiz_typ]||'c-text')+'" style="font-size:20px">'+(rTypL[u.reiz_typ]||u.reiz_typ)+'</div>';
+            h+='<div class="big-number '+(rTypC[reizTyp]||'c-text')+'" style="font-size:20px">'+(rTypL[reizTyp]||reizTyp)+'</div>';
             h+='<div class="row"><span class="label">Stärke</span><span class="value c-orange">'+(u.reiz_staerke||0).toFixed(1)+'</span></div>';
-            h+='<div class="row"><span class="label">Verbleibend</span><span class="value c-text">'+(u.reiz_dauer||0)+' Ticks</span></div>';
+            h+='<div class="row"><span class="label">Verbleibend</span><span class="value c-text">'+(u.reiz_dauer||u.reiz_verbleibend||0)+' Ticks</span></div>';
         } else {
             h+='<div class="big-number c-dim" style="font-size:18px">Keiner</div>';
         }
@@ -1460,7 +1634,7 @@ function ladeUmgebung(){
         var zoneL={'komfort_zone':'Komfort','normal_zone':'Normal','stress_zone':'Stress'};
         var zoneC={'komfort_zone':'c-green','normal_zone':'c-cyan','stress_zone':'c-orange'};
         var zoneD={'komfort_zone':'Genesis geht es zu gut → mehr Herausforderung','normal_zone':'Ausgeglichen — keine Anpassung','stress_zone':'Genesis leidet → mehr Fürsorge'};
-        var zone=u.zone||'normal_zone';
+        var zone=u.zone||u.feedback_zone||'normal_zone';
         h+='<div class="big-number '+(zoneC[zone]||'c-dim')+'" style="font-size:20px">'+(zoneL[zone]||zone)+'</div>';
         h+='<div style="text-align:center;font-size:12px;color:var(--text-secondary);margin-top:4px">'+(zoneD[zone]||'')+'</div>';
         h+='</div>';
@@ -1478,7 +1652,7 @@ function ladeUmgebung(){
 
 /* --- Phasen Tab --- */
 function ladePhasen(){
-    fetch('/api/phasen').then(function(r){return r.json();}).then(function(p){
+    fetch(iq('/api/phasen')).then(function(r){return r.json();}).then(function(p){
         var el=document.getElementById('phasen-content'),h='';
         var ck=function(ok){return ok?'✅':'🔴';};
         var psC=function(s){return s==='aktiv'?'ps-aktiv':s==='bereit'?'ps-bereit':'ps-nicht';};
@@ -1521,7 +1695,7 @@ function ladePhasen(){
 
 /* --- Log Tab --- */
 function ladeLogPanel(){
-    fetch('/api/logs').then(function(r){return r.json();}).then(function(d){
+    fetch(iq('/api/logs')).then(function(r){return r.json();}).then(function(d){
         var el=document.getElementById('log-content');
         if(!d.logs||d.logs.length===0){el.innerHTML='<div class="log-line c-dim">Keine Logs vorhanden</div>';return;}
         var h='';
@@ -1660,7 +1834,7 @@ function ladeArchiv(){
 /* --- Haupt-Loop --- */
 var _lastStatus=null;
 function aktualisiere(){
-    fetch('/api/status').then(function(r){return r.json();}).then(function(d){
+    fetch(iq('/api/status')).then(function(r){return r.json();}).then(function(d){
         _lastStatus=d;
         setBadge(d.genesis_status||'tot');
         if(currentTab==='dashboard')renderDashboard(d);
@@ -1694,77 +1868,100 @@ setInterval(aktualisiere,2000);
 class GenesisHandler(BaseHTTPRequestHandler):
     """HTTP-Handler für das Genesis Web-Dashboard."""
 
+    def _parse_instanz(self) -> str | None:
+        """Extrahiert ?instance= aus der URL."""
+        parsed = urlparse(self.path)
+        params = parse_qs(parsed.query)
+        instanz_list = params.get("instance", [])
+        return instanz_list[0] if instanz_list else None
+
+    def _api_pfad(self) -> str:
+        """Gibt den Pfad ohne Query-Parameter zurück."""
+        return urlparse(self.path).path
+
     def do_GET(self) -> None:
         """Behandelt GET-Anfragen."""
-        if self.path == "/api/status":
-            self._sende_json(_api_daten())
-        elif self.path == "/api/logs":
-            self._sende_json({"logs": _lese_logs(50)})
-        elif self.path == "/api/logs/export":
+        pfad = self._api_pfad()
+        inst = self._parse_instanz()
+
+        if pfad == "/api/instances":
+            self._sende_json(_api_instances())
+        elif pfad == "/api/status":
+            self._sende_json(_api_daten(inst))
+        elif pfad == "/api/logs":
+            self._sende_json({"logs": _lese_logs(50, inst)})
+        elif pfad == "/api/logs/export":
             self._sende_log_export()
-        elif self.path == "/api/langzeit":
-            self._sende_json(_api_langzeit())
-        elif self.path == "/api/tode":
-            self._sende_json(_api_tode())
-        elif self.path == "/api/kurzzeit/stats":
-            self._sende_json(_api_kurzzeit_stats())
-        elif self.path == "/api/phasen":
-            self._sende_json(_api_phasen())
-        elif self.path == "/api/umgebung":
-            self._sende_json(_api_umgebung())
-        elif self.path == "/api/export":
-            self._sende_json(_api_export())
-        elif self.path == "/api/logs/archiv":
+        elif pfad == "/api/langzeit":
+            self._sende_json(_api_langzeit(inst))
+        elif pfad == "/api/tode":
+            self._sende_json(_api_tode(inst))
+        elif pfad == "/api/kurzzeit/stats":
+            self._sende_json(_api_kurzzeit_stats(inst))
+        elif pfad == "/api/phasen":
+            self._sende_json(_api_phasen(inst))
+        elif pfad == "/api/umgebung":
+            self._sende_json(_api_umgebung(inst))
+        elif pfad == "/api/export":
+            self._sende_json(_api_export(inst))
+        elif pfad == "/api/logs/archiv":
             self._sende_json(_api_logs_archiv())
-        elif self.path.startswith("/api/logs/archiv/"):
+        elif pfad.startswith("/api/logs/archiv/"):
             self._sende_archiv_log()
-        elif self.path == "/api/test/status":
+        elif pfad == "/api/test/status":
             self._sende_json(_api_test_status())
-        elif self.path == "/api/logs/test":
+        elif pfad == "/api/logs/test":
             self._sende_json(_api_test_logs())
         else:
             self._sende_html()
 
     def do_POST(self) -> None:
         """Behandelt POST-Anfragen für Steuerung."""
+        pfad = self._api_pfad()
+        inst = self._parse_instanz()
         antwort: dict[str, Any] = {"ok": False, "fehler": "Unbekannter Endpunkt"}
 
-        if self.path == "/api/signal/sleep":
-            _schreibe_signal(f"SLEEP {time.time():.0f}")
+        if pfad == "/api/signal/sleep":
+            _schreibe_signal(f"SLEEP {time.time():.0f}", inst)
             antwort = {"ok": True, "aktion": "sleep"}
 
-        elif self.path == "/api/signal/good":
-            _schreibe_signal("GOOD")
+        elif pfad == "/api/signal/good":
+            _schreibe_signal("GOOD", inst)
             antwort = {"ok": True, "aktion": "good"}
 
-        elif self.path == "/api/signal/bad":
-            _schreibe_signal("BAD")
+        elif pfad == "/api/signal/bad":
+            _schreibe_signal("BAD", inst)
             antwort = {"ok": True, "aktion": "bad"}
 
-        elif self.path == "/api/control/wake":
-            if _genesis_lebt() == "lebt":
+        elif pfad == "/api/control/wake":
+            instanz_name = inst or "genesis-1"
+            if _genesis_lebt(inst) == "lebt":
                 antwort = {"ok": False, "fehler": "Genesis läuft bereits"}
             else:
+                signal_pfad = _SIGNAL_DATEI
+                if inst:
+                    signal_pfad = _instanz_pfade(inst)[4]
                 try:
-                    _SIGNAL_DATEI.unlink(missing_ok=True)
+                    signal_pfad.unlink(missing_ok=True)
                 except OSError:
                     pass
                 subprocess.Popen(
-                    [sys.executable, "-m", "vm.genesis.leben"],
+                    [sys.executable, "-m", "vm.genesis.leben",
+                     "--instance", instanz_name],
                     env={**__import__("os").environ, "PYTHONPATH": "/opt/genesis"},
                     cwd="/opt/genesis",
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     start_new_session=True,
                 )
-                antwort = {"ok": True, "aktion": "wake"}
+                antwort = {"ok": True, "aktion": "wake", "instanz": instanz_name}
 
-        elif self.path == "/api/control/restart":
-            _schreibe_signal(f"SLEEP {time.time():.0f}")
+        elif pfad == "/api/control/restart":
+            _schreibe_signal(f"SLEEP {time.time():.0f}", inst)
             antwort = {"ok": True, "aktion": "restart"}
 
-        elif self.path in ("/api/test/cpu", "/api/test/ram", "/api/test/kombi"):
-            test_typ: str = self.path.split("/")[-1]
+        elif pfad in ("/api/test/cpu", "/api/test/ram", "/api/test/kombi"):
+            test_typ: str = pfad.split("/")[-1]
             antwort = _api_test_start(test_typ)
 
         self._sende_json(antwort)

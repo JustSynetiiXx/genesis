@@ -3,10 +3,14 @@
 Start → Aufwachen → Wachphase (nur Fühlen) → Hauptloop → Schlaf-Signal → Ende.
 
 Der Loop: Fühlen → Schmerz → Reflexe → Entscheiden → Handeln → Lernen → Wiederholen.
+
+Umgebungsdaten werden extern aus umgebung_status.json gelesen (geschrieben vom
+Umgebungs-Dienst). Unterstützt mehrere Instanzen via --instance Parameter.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import signal
@@ -35,13 +39,110 @@ from vm.genesis.lernen import Erfahrung, lerne, lerne_aus_reflex, waehle_aktion
 from vm.genesis.reflexe import pruefe as pruefe_reflexe
 from vm.genesis.schmerz import berechne_schmerz, berechne_schmerz_details, berechne_wohlbefinden, warnstufe
 from vm.genesis import schlaf as schlaf_modul
-from vm.genesis.umgebung.umgebung import GebaerMutter
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger("genesis")
+
+
+# --- Umgebungs-Status lesen (extern vom Umgebungs-Dienst) ---
+
+_UMGEBUNG_FALLBACK: dict[str, Any] = {
+    "rhythmus": 0.5,
+    "rhythmus_kategorie": "aktiv",
+    "verfall_modifikator": 0.2,
+    "reiz_aktiv": None,
+    "reiz_staerke": 0.0,
+    "reiz_verbleibend": 0,
+    "feedback_zone": "normal_zone",
+    "phase": "embryo",
+    "phase_tag": 0.0,
+    "naechster_schub_in": 50,
+    "schub_aktiv": False,
+    "schub_menge": 0.0,
+    "features": {
+        "rhythmus_aktiv": False,
+        "variable_naehrung": False,
+        "reize_aktiv": False,
+        "feedback_aktiv": False,
+        "externe_aktionen": False,
+        "erlaubte_reize": [],
+        "zusatz_aktionen": [],
+    },
+    "verfall_mod": 1.0,
+    "schub_mod": 1.0,
+    "zeitstempel": 0,
+}
+
+
+def _lese_umgebung(pfad: Path) -> dict[str, Any]:
+    """Liest den aktuellen Umgebungs-Status aus der JSON-Datei.
+
+    Args:
+        pfad: Pfad zur umgebung_status.json.
+
+    Returns:
+        Umgebungs-Daten oder Fallback-Werte wenn nicht lesbar.
+    """
+    try:
+        daten = json.loads(pfad.read_bytes())
+        alter: float = time.time() - daten.get("zeitstempel", 0)
+        if alter > 30:
+            logger.warning("Umgebungs-Daten veraltet (%.0fs)", alter)
+        return daten
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return dict(_UMGEBUNG_FALLBACK)
+
+
+def _wende_reiz_auf_rohwerte_an(rohwerte: dict[str, float],
+                                 umg: dict[str, Any]) -> dict[str, float]:
+    """Wendet den Umgebungs-Reiz auf die Sensor-Rohwerte an.
+
+    Args:
+        rohwerte: Sensor-Rohwerte.
+        umg: Umgebungs-Daten aus umgebung_status.json.
+
+    Returns:
+        Modifizierte Rohwerte.
+    """
+    reiz_typ = umg.get("reiz_aktiv")
+    if reiz_typ is None:
+        return rohwerte
+
+    staerke: float = umg.get("reiz_staerke", 0.0)
+    if staerke <= 0:
+        return rohwerte
+
+    ergebnis = dict(rohwerte)
+    if reiz_typ == "vibration":
+        ergebnis["luefter_rpm"] = ergebnis.get("luefter_rpm", 1000.0) + staerke
+    elif reiz_typ == "waerme":
+        ergebnis["cpu_temp_tctl"] = ergebnis.get("cpu_temp_tctl", 50.0) + staerke
+        ergebnis["cpu_temp_tccd1"] = ergebnis.get("cpu_temp_tccd1", 50.0) + staerke
+    elif reiz_typ == "druck":
+        frei: float = ergebnis.get("host_ram_frei_mb", 16000.0)
+        ergebnis["host_ram_frei_mb"] = max(0.0, frei - staerke)
+
+    return ergebnis
+
+
+def _umgebung_sensoren_hinzufuegen(rohwerte: dict[str, float],
+                                     umg: dict[str, Any]) -> None:
+    """Fügt Umgebungs-Sensoren zu den Rohwerten hinzu (in-place).
+
+    Args:
+        rohwerte: Sensor-Rohwerte (wird modifiziert).
+        umg: Umgebungs-Daten.
+    """
+    rohwerte["umgebung_rhythmus"] = umg.get("rhythmus", 0.5)
+    if umg.get("reiz_aktiv") is not None:
+        rohwerte["reiz_aktiv"] = 1.0
+        rohwerte["reiz_typ"] = umg["reiz_aktiv"]
+    else:
+        rohwerte["reiz_aktiv"] = 0.0
+        rohwerte["reiz_typ"] = "keiner"
 
 
 class _DateiLogHandler(logging.Handler):
@@ -136,16 +237,26 @@ def _schreibe_status(status_pfad: Path, zustand: dict[str, Any],
 
 
 def main(shared_dir: Path | None = None, db_dir: Path | None = None,
-         max_loops: int | None = None) -> None:
+         max_loops: int | None = None,
+         umgebung_pfad: Path | None = None) -> None:
     """Der Lebenszyklus des Neugeborenen.
 
     Args:
         shared_dir: Pfad zum Shared Directory (Standard: aus config).
         db_dir: Pfad zum Datenbank-Verzeichnis (Standard: aus config).
         max_loops: Maximale Anzahl Loops (None = unendlich, für Tests).
+        umgebung_pfad: Pfad zur umgebung_status.json (Standard: aus config_instances).
     """
     shared: Path = shared_dir or SHARED_DIR
     db: Path = db_dir or DB_VERZEICHNIS
+
+    # Umgebungs-Status-Pfad bestimmen
+    if umgebung_pfad is None:
+        try:
+            from vm.config_instances import UMGEBUNG_STATUS_PFAD
+            umgebung_pfad = UMGEBUNG_STATUS_PFAD
+        except ImportError:
+            umgebung_pfad = shared / "umgebung_status.json"
 
     # Verzeichnisse erstellen
     db.mkdir(parents=True, exist_ok=True)
@@ -166,7 +277,6 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
     heartbeat_db: Heartbeat = Heartbeat(db / "heartbeat.db")
     langzeit_db: LangzeitGedaechtnis = LangzeitGedaechtnis(db / "langzeit.db")
     kurzzeit_db: KurzzeitGedaechtnis = KurzzeitGedaechtnis(db / "kurzzeit.db")
-    gebaermutter: GebaerMutter = GebaerMutter(db_verzeichnis=db)
 
     # Letzter bekannter Zustand (für SIGTERM-Handler)
     letzter_zustand: dict[str, str] = {}
@@ -213,30 +323,28 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
     try:
         # --- 2. Wachphase: Nur Fühlen, keine Aktionen ---
         logger.info("Wachphase: %d Sekunden nur Fühlen...", WACHPHASE_SEKUNDEN)
+
+        # Umgebungs-Info beim Start loggen
+        umg_start: dict[str, Any] = _lese_umgebung(umgebung_pfad)
         logger.info("Entwicklungsphase: %s (%.1f Wachtage)",
-                     gebaermutter.entwicklung.aktuelle_phase(),
-                     gebaermutter.entwicklung.wachtage)
+                     umg_start.get("phase", "unbekannt"),
+                     umg_start.get("phase_tag", 0.0))
+
         for i in range(WACHPHASE_SEKUNDEN):
             if max_loops is not None and wach_seit >= max_loops:
                 break
 
-            # Umgebung ticken
-            umg_daten: dict[str, Any] = gebaermutter.tick(LOOP_INTERVALL)
+            # Umgebung lesen (extern vom Umgebungs-Dienst)
+            umg_daten: dict[str, Any] = _lese_umgebung(umgebung_pfad)
 
             zustand: dict[str, Any] = koerper.fuehle()
 
             # Reize auf Rohwerte anwenden
-            zustand["rohwerte"] = gebaermutter.wende_reiz_auf_rohwerte_an(
-                zustand["rohwerte"]
+            zustand["rohwerte"] = _wende_reiz_auf_rohwerte_an(
+                zustand["rohwerte"], umg_daten
             )
             # Umgebungssensoren hinzufügen
-            zustand["rohwerte"]["umgebung_rhythmus"] = umg_daten["rhythmus"]
-            if umg_daten["reiz"] is not None:
-                zustand["rohwerte"]["reiz_aktiv"] = 1.0
-                zustand["rohwerte"]["reiz_typ"] = umg_daten["reiz"].typ
-            else:
-                zustand["rohwerte"]["reiz_aktiv"] = 0.0
-                zustand["rohwerte"]["reiz_typ"] = "keiner"
+            _umgebung_sensoren_hinzufuegen(zustand["rohwerte"], umg_daten)
 
             schmerz_wert: float = berechne_schmerz(zustand["rohwerte"])
             stufe: str = warnstufe(schmerz_wert)
@@ -266,7 +374,7 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 langzeit_db.anzahl_tode(), langzeit_db.letzter_tod(),
                 wach_seit, modus,
                 schmerz_details=details,
-                umgebung_daten=gebaermutter.status_fuer_dashboard(),
+                umgebung_daten=umg_daten,
             )
 
             vorheriger_schmerz = schmerz_wert
@@ -293,27 +401,21 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 logger.info("Konsolidiert: %d Erfahrungen. Gute Nacht.", konsolidiert)
                 break
 
-            # Umgebung ticken
-            umg_daten = gebaermutter.tick(aktionen.abtastrate.intervall)
+            # Umgebung lesen (extern vom Umgebungs-Dienst)
+            umg_daten = _lese_umgebung(umgebung_pfad)
 
             # Fühlen
             zustand = koerper.fuehle()
 
             # Reize auf Rohwerte anwenden
-            zustand["rohwerte"] = gebaermutter.wende_reiz_auf_rohwerte_an(
-                zustand["rohwerte"]
+            zustand["rohwerte"] = _wende_reiz_auf_rohwerte_an(
+                zustand["rohwerte"], umg_daten
             )
             # Umgebungssensoren hinzufügen
-            zustand["rohwerte"]["umgebung_rhythmus"] = umg_daten["rhythmus"]
-            if umg_daten["reiz"] is not None:
-                zustand["rohwerte"]["reiz_aktiv"] = 1.0
-                zustand["rohwerte"]["reiz_typ"] = umg_daten["reiz"].typ
-            else:
-                zustand["rohwerte"]["reiz_aktiv"] = 0.0
-                zustand["rohwerte"]["reiz_typ"] = "keiner"
+            _umgebung_sensoren_hinzufuegen(zustand["rohwerte"], umg_daten)
 
             # Nährstoff-Schub: Cache reduzieren
-            if umg_daten["schub_aktiv"] and umg_daten["schub_menge"] > 0:
+            if umg_daten.get("schub_aktiv") and umg_daten.get("schub_menge", 0) > 0:
                 reduziert: float = aktionen.cache.reduziere_um(umg_daten["schub_menge"])
                 if reduziert > 0:
                     logger.debug("Nährstoff-Schub: %.1f MB Cache reduziert", reduziert)
@@ -321,9 +423,6 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
             schmerz_wert = berechne_schmerz(zustand["rohwerte"])
             wohlbefinden_wert = berechne_wohlbefinden(schmerz_wert, vorheriger_schmerz)
             stufe = warnstufe(schmerz_wert)
-
-            # Feedback an Umgebung geben
-            gebaermutter.feedback(schmerz_wert)
 
             # Reflexe prüfen (haben Vorrang)
             gefeuerte_reflexe = pruefe_reflexe(zustand["rohwerte"])
@@ -354,7 +453,8 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                     )
             else:
                 # Verfügbare Aktionen basierend auf Entwicklungsphase
-                zusatz: list[str] = gebaermutter.verfuegbare_zusatz_aktionen()
+                features = umg_daten.get("features", {})
+                zusatz: list[str] = features.get("zusatz_aktionen", [])
                 verfuegbar: list[str] = list(aktionen_modul.ALLE_AKTION_NAMEN)
                 verfuegbar.extend(zusatz)
 
@@ -368,32 +468,24 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 # Handeln
                 aktionen.ausfuehren(aktion_name)
 
-                # Externe Aktionen in der Gebärmutter ausführen
-                if aktion_name == "signal_senden":
-                    gebaermutter.ausfuehren_signal_senden()
-                    logger.debug("Externe Aktion: signal_senden")
-                elif aktion_name == "umgebung_erkunden":
-                    gebaermutter.ausfuehren_umgebung_erkunden()
-                    logger.debug("Externe Aktion: umgebung_erkunden")
-                elif aktion_name == "rhythmus_anpassen":
-                    erfolg: bool = gebaermutter.ausfuehren_rhythmus_anpassen()
-                    logger.debug(
-                        "Externe Aktion: rhythmus_anpassen → %s",
-                        "Erfolg" if erfolg else "kein Effekt",
-                    )
+                # Externe Aktionen loggen (Umgebung reagiert nicht direkt,
+                # aber Genesis lernt trotzdem aus dem Ergebnis)
+                if aktion_name in ("signal_senden", "umgebung_erkunden",
+                                   "rhythmus_anpassen"):
+                    logger.debug("Externe Aktion: %s", aktion_name)
 
                 # Bewusste Aktion merken (für Reflex-Lernen)
                 letzte_bewusste_aktion = aktion_name
                 zustand_bei_letzter_entscheidung = zustand["kategorien"]
 
-            # Natürlicher Verfall (variabel durch Gebärmutter)
-            aktionen.natuerlicher_verfall(umg_daten["verfall_mb"])
+            # Natürlicher Verfall (variabel durch Umgebungs-Dienst)
+            verfall: float = umg_daten.get("verfall_modifikator", 0.2)
+            aktionen.natuerlicher_verfall(verfall)
 
             # Rhythmus-Anpassung Bonus: Verfall kurz senken bei Erfolg
-            if (aktion_name == "rhythmus_anpassen"
-                    and umg_daten["rhythmus"] > 0.6):
-                # Erfolg: Nächster Verfall wird reduziert (Cache schrumpft kurz)
-                aktionen.cache.reduziere_um(umg_daten["verfall_mb"] * 3)
+            rhythmus: float = umg_daten.get("rhythmus", 0.5)
+            if aktion_name == "rhythmus_anpassen" and rhythmus > 0.6:
+                aktionen.cache.reduziere_um(verfall * 3)
 
             # Warten (basierend auf Abtastrate)
             time.sleep(aktionen.abtastrate.intervall)
@@ -434,7 +526,7 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 langzeit_db.anzahl_tode(), langzeit_db.letzter_tod(),
                 wach_seit, modus,
                 schmerz_details=details,
-                umgebung_daten=gebaermutter.status_fuer_dashboard(),
+                umgebung_daten=umg_daten,
             )
 
             vorheriger_schmerz = schmerz_wert
@@ -442,7 +534,7 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
             loop_zaehler += 1
 
             if loop_zaehler % 60 == 0:
-                phase_info: str = gebaermutter.entwicklung.aktuelle_phase()
+                phase_info: str = umg_daten.get("phase", "unbekannt")
                 logger.info(
                     "Loop %d | Schmerz: %.2f | Aktion: %s | Cache: %.1f MB | Phase: %s",
                     loop_zaehler, schmerz_wert,
@@ -461,7 +553,6 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
         if modus != "einschlafen":
             heartbeat_db.aktualisiere(letzter_zustand, letzter_schmerz, schlaf_marker=False)
         aktionen.stoppe()
-        gebaermutter.speichere()
         heartbeat_db.schliesse()
         langzeit_db.schliesse()
         kurzzeit_db.schliesse()
@@ -469,4 +560,22 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Genesis — Digitales Leben")
+    parser.add_argument(
+        "--instance", type=str, default="genesis-1",
+        help="Name der Instanz (z.B. genesis-1, genesis-2)",
+    )
+    args = parser.parse_args()
+
+    # Pfade aus config_instances laden
+    try:
+        from vm.config_instances import get_instanz_pfade, UMGEBUNG_STATUS_PFAD
+        db_pfad, shared_pfad = get_instanz_pfade(args.instance)
+        logger.info("Instanz: %s (DB: %s, Shared: %s)", args.instance, db_pfad, shared_pfad)
+        main(shared_dir=shared_pfad, db_dir=db_pfad, umgebung_pfad=UMGEBUNG_STATUS_PFAD)
+    except ImportError:
+        # Fallback ohne config_instances
+        main()
+    except KeyError as e:
+        logger.error("Instanz-Fehler: %s", e)
+        sys.exit(1)

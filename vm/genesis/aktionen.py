@@ -279,5 +279,3 @@ class AktionsManager:
             self.cache.natuerlicher_verfall_variabel(verfall_mb)
         else:
             self.cache.natuerlicher_verfall()
-        """Cache wächst automatisch (einmal pro Loop)."""
-        self.cache.natuerlicher_verfall()
