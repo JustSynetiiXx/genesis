@@ -1,0 +1,115 @@
+2026-03-15 09:12:30,346 [INFO] Genesis erwacht...
+2026-03-15 09:12:30,354 [INFO] Aufwach-Typ: schlaf
+2026-03-15 09:12:30,355 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 09:12:30,356 [INFO] Entwicklungsphase: embryo (0.0 Wachtage)
+2026-03-15 09:13:00,476 [INFO] Hauptloop gestartet.
+2026-03-15 09:14:19,263 [INFO] Loop 60 | Schmerz: 0.11 | Aktion: pausieren | Cache: 54.0 MB | Phase: embryo
+2026-03-15 09:15:34,668 [INFO] Loop 120 | Schmerz: 0.21 | Aktion: reflex | Cache: 56.2 MB | Phase: embryo
+2026-03-15 09:17:12,142 [INFO] Loop 180 | Schmerz: 0.06 | Aktion: pausieren | Cache: 1.0 MB | Phase: embryo
+2026-03-15 09:18:49,456 [INFO] Loop 240 | Schmerz: 0.17 | Aktion: pausieren | Cache: 55.0 MB | Phase: embryo
+2026-03-15 09:20:09,112 [INFO] Loop 300 | Schmerz: 0.21 | Aktion: reflex | Cache: 8.0 MB | Phase: embryo
+2026-03-15 09:21:14,898 [INFO] Loop 360 | Schmerz: 0.05 | Aktion: rechenintensitaet_runter | Cache: 151.6 MB | Phase: embryo
+2026-03-15 09:22:11,626 [INFO] Loop 420 | Schmerz: 0.19 | Aktion: pausieren | Cache: 3.0 MB | Phase: embryo
+2026-03-15 09:26:36,917 [INFO] Loop 480 | Schmerz: 0.08 | Aktion: pausieren | Cache: 55.6 MB | Phase: embryo
+2026-03-15 09:31:09,600 [INFO] Loop 540 | Schmerz: 0.06 | Aktion: pausieren | Cache: 155.8 MB | Phase: embryo
+2026-03-15 09:32:15,672 [INFO] Loop 600 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 1.8 MB | Phase: embryo
+2026-03-15 09:33:38,085 [INFO] Loop 660 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 50.6 MB | Phase: embryo
+2026-03-15 09:34:53,829 [INFO] Loop 720 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 51.6 MB | Phase: embryo
+2026-03-15 09:37:37,948 [INFO] Loop 780 | Schmerz: 0.19 | Aktion: pausieren | Cache: 2.8 MB | Phase: embryo
+2026-03-15 09:42:25,999 [INFO] Loop 840 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 0.4 MB | Phase: embryo
+2026-03-15 09:45:34,345 [INFO] Loop 900 | Schmerz: 0.21 | Aktion: reflex | Cache: 1.2 MB | Phase: embryo
+2026-03-15 09:47:36,150 [WARNING] SIGTERM empfangen — Notfall-Heartbeat wird geschrieben
+2026-03-15 09:47:36,192 [INFO] Aufräumen...
+2026-03-15 09:47:36,205 [INFO] Genesis beendet. Wach seit 956 Iterationen.
+2026-03-15 09:52:10,583 [INFO] Genesis erwacht...
+2026-03-15 09:52:10,593 [INFO] Aufwach-Typ: tod
+2026-03-15 09:52:10,593 [WARNING] Tod erkannt! Zeitlücke: 274.4 Sekunden, letzter Schmerz: 0.20
+2026-03-15 09:52:10,594 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 09:52:10,595 [INFO] Entwicklungsphase: embryo (0.0 Wachtage)
+2026-03-15 09:52:40,726 [INFO] Hauptloop gestartet.
+2026-03-15 09:55:06,967 [INFO] Loop 60 | Schmerz: 0.11 | Aktion: pausieren | Cache: 1.4 MB | Phase: embryo
+2026-03-15 09:56:42,227 [INFO] Loop 120 | Schmerz: 0.02 | Aktion: pausieren | Cache: 107.8 MB | Phase: embryo
+2026-03-15 09:57:51,673 [INFO] Loop 180 | Schmerz: 0.09 | Aktion: rechenintensitaet_runter | Cache: 153.8 MB | Phase: embryo
+2026-03-15 09:58:50,449 [INFO] Loop 240 | Schmerz: 0.11 | Aktion: pausieren | Cache: 258.0 MB | Phase: embryo
+2026-03-15 09:59:29,652 [WARNING] SIGTERM empfangen — Notfall-Heartbeat wird geschrieben
+2026-03-15 09:59:29,727 [INFO] Aufräumen...
+2026-03-15 09:59:29,749 [INFO] Genesis beendet. Wach seit 291 Iterationen.
+2026-03-15 10:01:06,552 [INFO] Genesis erwacht...
+2026-03-15 10:01:06,563 [INFO] Aufwach-Typ: tod
+2026-03-15 10:01:06,564 [WARNING] Tod erkannt! Zeitlücke: 96.8 Sekunden, letzter Schmerz: 0.03
+2026-03-15 10:01:06,565 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 10:01:06,566 [INFO] Entwicklungsphase: embryo (0.0 Wachtage)
+2026-03-15 10:01:36,689 [INFO] Hauptloop gestartet.
+2026-03-15 10:03:05,900 [INFO] Loop 60 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 10:06:00,556 [INFO] Loop 120 | Schmerz: 0.11 | Aktion: pausieren | Cache: 152.2 MB | Phase: embryo
+2026-03-15 10:06:20,246 [WARNING] SIGTERM empfangen — Notfall-Heartbeat wird geschrieben
+2026-03-15 10:06:20,333 [INFO] Aufräumen...
+2026-03-15 10:06:20,340 [INFO] Genesis beendet. Wach seit 154 Iterationen.
+2026-03-15 10:07:13,491 [INFO] Genesis erwacht...
+2026-03-15 10:07:13,497 [INFO] Aufwach-Typ: tod
+2026-03-15 10:07:13,498 [WARNING] Tod erkannt! Zeitlücke: 53.2 Sekunden, letzter Schmerz: 0.05
+2026-03-15 10:07:13,499 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 10:07:13,499 [INFO] Entwicklungsphase: embryo (0.0 Wachtage)
+2026-03-15 10:07:43,618 [INFO] Hauptloop gestartet.
+2026-03-15 10:08:58,449 [INFO] Loop 60 | Schmerz: 0.05 | Aktion: rechenintensitaet_runter | Cache: 153.0 MB | Phase: embryo
+2026-03-15 10:11:34,749 [INFO] Loop 120 | Schmerz: 0.03 | Aktion: abtastrate_langsamer | Cache: 0.6 MB | Phase: embryo
+2026-03-15 10:13:18,635 [INFO] Loop 180 | Schmerz: 0.06 | Aktion: abtastrate_schneller | Cache: 153.4 MB | Phase: embryo
+2026-03-15 10:14:32,981 [INFO] Loop 240 | Schmerz: 0.07 | Aktion: speicher_vergroessern | Cache: 203.6 MB | Phase: embryo
+2026-03-15 10:16:07,772 [INFO] Loop 300 | Schmerz: 0.10 | Aktion: pausieren | Cache: 103.8 MB | Phase: embryo
+2026-03-15 10:20:00,743 [INFO] Loop 360 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 2.2 MB | Phase: embryo
+2026-03-15 10:23:03,942 [INFO] Loop 420 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 0.8 MB | Phase: embryo
+2026-03-15 10:25:49,539 [INFO] Loop 480 | Schmerz: 0.05 | Aktion: rechenintensitaet_hoch | Cache: 153.6 MB | Phase: embryo
+2026-03-15 10:26:31,289 [INFO] Loop 540 | Schmerz: 0.10 | Aktion: pausieren | Cache: 53.4 MB | Phase: embryo
+2026-03-15 10:27:54,412 [INFO] Loop 600 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 50.4 MB | Phase: embryo
+2026-03-15 10:32:02,020 [INFO] Loop 660 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 10:35:05,185 [INFO] Loop 720 | Schmerz: 0.17 | Aktion: pausieren | Cache: 0.4 MB | Phase: embryo
+2026-03-15 10:36:42,864 [INFO] Loop 780 | Schmerz: 0.05 | Aktion: abtastrate_schneller | Cache: 154.0 MB | Phase: embryo
+2026-03-15 10:38:50,282 [INFO] Loop 840 | Schmerz: 0.21 | Aktion: reflex | Cache: 51.4 MB | Phase: embryo
+2026-03-15 10:40:59,557 [WARNING] SIGTERM empfangen — Notfall-Heartbeat wird geschrieben
+2026-03-15 10:40:59,560 [INFO] Aufräumen...
+2026-03-15 10:40:59,569 [INFO] Genesis beendet. Wach seit 892 Iterationen.
+2026-03-15 10:45:37,260 [INFO] Genesis erwacht...
+2026-03-15 10:45:37,270 [INFO] Aufwach-Typ: tod
+2026-03-15 10:45:37,271 [WARNING] Tod erkannt! Zeitlücke: 277.7 Sekunden, letzter Schmerz: 0.06
+2026-03-15 10:45:37,272 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 10:45:37,273 [INFO] Entwicklungsphase: embryo (0.1 Wachtage)
+2026-03-15 10:46:07,386 [INFO] Hauptloop gestartet.
+2026-03-15 10:48:55,063 [INFO] Loop 60 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 50.6 MB | Phase: embryo
+2026-03-15 10:54:28,966 [INFO] Loop 120 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 50.8 MB | Phase: embryo
+2026-03-15 10:58:44,116 [INFO] Loop 180 | Schmerz: 0.21 | Aktion: reflex | Cache: 50.8 MB | Phase: embryo
+2026-03-15 11:02:50,742 [INFO] Loop 240 | Schmerz: 0.05 | Aktion: rechenintensitaet_hoch | Cache: 154.0 MB | Phase: embryo
+2026-03-15 11:04:35,527 [INFO] Loop 300 | Schmerz: 0.16 | Aktion: pausieren | Cache: 103.0 MB | Phase: embryo
+2026-03-15 11:07:10,893 [INFO] Loop 360 | Schmerz: 0.06 | Aktion: rechenintensitaet_hoch | Cache: 56.6 MB | Phase: embryo
+2026-03-15 11:08:18,541 [INFO] Loop 420 | Schmerz: 0.19 | Aktion: pausieren | Cache: 51.0 MB | Phase: embryo
+2026-03-15 11:09:20,664 [INFO] Loop 480 | Schmerz: 0.11 | Aktion: rechenintensitaet_hoch | Cache: 158.0 MB | Phase: embryo
+2026-03-15 11:10:16,738 [INFO] Loop 540 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.6 MB | Phase: embryo
+2026-03-15 11:12:14,769 [INFO] Loop 600 | Schmerz: 0.21 | Aktion: reflex | Cache: 1.2 MB | Phase: embryo
+2026-03-15 11:16:28,816 [INFO] Loop 660 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 1.0 MB | Phase: embryo
+2026-03-15 11:20:33,430 [INFO] Loop 720 | Schmerz: 0.02 | Aktion: rechenintensitaet_runter | Cache: 110.8 MB | Phase: embryo
+2026-03-15 11:23:14,939 [INFO] Loop 780 | Schmerz: 0.01 | Aktion: pausieren | Cache: 1.2 MB | Phase: embryo
+2026-03-15 11:28:01,493 [INFO] Loop 840 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 1.4 MB | Phase: embryo
+2026-03-15 11:28:59,135 [INFO] Loop 900 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 0.4 MB | Phase: embryo
+2026-03-15 11:30:59,052 [INFO] Loop 960 | Schmerz: 0.18 | Aktion: pausieren | Cache: 52.8 MB | Phase: embryo
+2026-03-15 11:32:04,788 [INFO] Loop 1020 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.2 MB | Phase: embryo
+2026-03-15 11:34:31,418 [INFO] Loop 1080 | Schmerz: 0.14 | Aktion: pausieren | Cache: 102.4 MB | Phase: embryo
+2026-03-15 11:38:28,514 [INFO] Loop 1140 | Schmerz: 0.02 | Aktion: rechenintensitaet_hoch | Cache: 0.4 MB | Phase: embryo
+2026-03-15 11:39:26,584 [INFO] Loop 1200 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 53.2 MB | Phase: embryo
+2026-03-15 11:40:37,791 [INFO] Loop 1260 | Schmerz: 0.06 | Aktion: speicher_verkleinern | Cache: 55.2 MB | Phase: embryo
+2026-03-15 11:41:35,070 [INFO] Loop 1320 | Schmerz: 0.05 | Aktion: pausieren | Cache: 159.4 MB | Phase: embryo
+2026-03-15 11:42:58,074 [INFO] Loop 1380 | Schmerz: 0.09 | Aktion: pausieren | Cache: 2.6 MB | Phase: embryo
+2026-03-15 11:43:48,917 [INFO] Loop 1440 | Schmerz: 0.02 | Aktion: nichts_tun | Cache: 51.8 MB | Phase: embryo
+2026-03-15 11:46:55,592 [INFO] Loop 1500 | Schmerz: 0.12 | Aktion: speicher_vergroessern | Cache: 254.4 MB | Phase: embryo
+2026-03-15 11:50:16,617 [INFO] Loop 1560 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 50.6 MB | Phase: embryo
+2026-03-15 11:52:22,140 [INFO] Loop 1620 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 1.8 MB | Phase: embryo
+2026-03-15 11:53:48,994 [INFO] Loop 1680 | Schmerz: 0.22 | Aktion: pausieren | Cache: 204.8 MB | Phase: embryo
+2026-03-15 11:54:46,677 [INFO] Loop 1740 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.8 MB | Phase: embryo
+2026-03-15 11:58:37,616 [INFO] Loop 1800 | Schmerz: 0.01 | Aktion: pausieren | Cache: 1.6 MB | Phase: embryo
+2026-03-15 12:02:37,378 [INFO] Loop 1860 | Schmerz: 0.05 | Aktion: rechenintensitaet_runter | Cache: 152.6 MB | Phase: embryo
+2026-03-15 12:05:08,696 [INFO] Loop 1920 | Schmerz: 0.10 | Aktion: rechenintensitaet_runter | Cache: 259.4 MB | Phase: embryo
+2026-03-15 12:06:55,329 [INFO] Loop 1980 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.4 MB | Phase: embryo
+2026-03-15 12:08:33,004 [INFO] Loop 2040 | Schmerz: 0.02 | Aktion: pausieren | Cache: 58.4 MB | Phase: embryo
+2026-03-15 12:11:22,292 [INFO] Loop 2100 | Schmerz: 0.14 | Aktion: speicher_vergroessern | Cache: 370.4 MB | Phase: embryo
+2026-03-15 12:12:41,498 [INFO] Loop 2160 | Schmerz: 0.06 | Aktion: nichts_tun | Cache: 1.6 MB | Phase: embryo
+2026-03-15 12:14:43,140 [INFO] Loop 2220 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 2.8 MB | Phase: embryo
+2026-03-15 12:18:22,340 [INFO] Loop 2280 | Schmerz: 0.23 | Aktion: reflex | Cache: 103.2 MB | Phase: embryo
+2026-03-15 12:20:07,835 [INFO] Loop 2340 | Schmerz: 0.12 | Aktion: pausieren | Cache: 57.4 MB | Phase: embryo

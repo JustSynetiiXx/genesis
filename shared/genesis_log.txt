@@ -1,280 +1,330 @@
-2026-03-13 12:22:02,512 [INFO] Genesis erwacht...
-2026-03-13 12:22:02,524 [INFO] Aufwach-Typ: tod
-2026-03-13 12:22:02,525 [WARNING] Tod erkannt! Zeitlücke: 122.1 Sekunden, letzter Schmerz: 0.08
-2026-03-13 12:22:02,525 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 12:22:02,526 [INFO] Reflex (Wachphase): cpu_notfall
-2026-03-13 12:22:32,619 [INFO] Hauptloop gestartet.
-2026-03-13 12:23:22,250 [INFO] Loop 60 | Schmerz: 0.22 | Aktion: reflex | Cache: 167.0 MB
-2026-03-13 12:24:04,722 [INFO] Loop 120 | Schmerz: 0.04 | Aktion: rechenintensitaet_runter | Cache: 274.0 MB
-2026-03-13 12:26:48,843 [INFO] Loop 180 | Schmerz: 0.27 | Aktion: reflex | Cache: 390.0 MB
-2026-03-13 12:30:00,718 [INFO] Loop 240 | Schmerz: 0.09 | Aktion: abtastrate_langsamer | Cache: 483.0 MB
-2026-03-13 12:32:42,030 [INFO] Loop 300 | Schmerz: 0.10 | Aktion: pausieren | Cache: 539.0 MB
-2026-03-13 12:33:36,259 [INFO] Loop 360 | Schmerz: 0.11 | Aktion: abtastrate_schneller | Cache: 593.0 MB
-2026-03-13 12:35:32,842 [INFO] Loop 420 | Schmerz: 0.12 | Aktion: rechenintensitaet_runter | Cache: 650.0 MB
-2026-03-13 12:39:25,822 [INFO] Loop 480 | Schmerz: 0.13 | Aktion: rechenintensitaet_hoch | Cache: 706.0 MB
-2026-03-13 12:41:39,915 [INFO] Loop 540 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 761.0 MB
-2026-03-13 12:44:25,416 [INFO] Loop 600 | Schmerz: 0.15 | Aktion: speicher_verkleinern | Cache: 817.0 MB
-2026-03-13 12:49:05,757 [INFO] Loop 660 | Schmerz: 0.29 | Aktion: speicher_vergroessern | Cache: 875.0 MB
-2026-03-13 12:52:53,666 [INFO] Loop 720 | Schmerz: 0.35 | Aktion: reflex | Cache: 931.0 MB
-2026-03-13 12:56:06,392 [INFO] Loop 780 | Schmerz: 0.35 | Aktion: reflex | Cache: 984.0 MB
-2026-03-13 13:00:30,955 [INFO] Loop 840 | Schmerz: 0.15 | Aktion: speicher_verkleinern | Cache: 1038.0 MB
-2026-03-13 13:02:31,624 [INFO] Loop 900 | Schmerz: 0.15 | Aktion: speicher_vergroessern | Cache: 1095.0 MB
-2026-03-13 13:04:49,894 [INFO] Loop 960 | Schmerz: 0.15 | Aktion: pausieren | Cache: 1150.0 MB
-2026-03-13 13:06:47,740 [INFO] Loop 1020 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 1206.0 MB
-2026-03-13 13:07:45,118 [INFO] Loop 1080 | Schmerz: 0.35 | Aktion: reflex | Cache: 1260.0 MB
-2026-03-13 13:10:22,116 [INFO] Loop 1140 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 1318.0 MB
-2026-03-13 13:12:33,157 [INFO] Loop 1200 | Schmerz: 0.15 | Aktion: rechenintensitaet_runter | Cache: 1374.0 MB
-2026-03-13 13:13:23,684 [INFO] Loop 1260 | Schmerz: 0.35 | Aktion: reflex | Cache: 1431.0 MB
-2026-03-13 13:13:53,938 [INFO] Loop 1320 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 1485.0 MB
-2026-03-13 13:14:19,970 [INFO] Loop 1380 | Schmerz: 0.15 | Aktion: abtastrate_schneller | Cache: 1538.0 MB
-2026-03-13 13:14:59,264 [INFO] Loop 1440 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 1593.0 MB
-2026-03-13 13:15:40,705 [INFO] Loop 1500 | Schmerz: 0.15 | Aktion: rechenintensitaet_runter | Cache: 1650.0 MB
-2026-03-13 13:16:19,687 [INFO] Loop 1560 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 1704.0 MB
-2026-03-13 13:21:03,766 [INFO] Loop 1620 | Schmerz: 0.35 | Aktion: reflex | Cache: 1762.0 MB
-2026-03-13 13:24:33,630 [INFO] Loop 1680 | Schmerz: 0.15 | Aktion: speicher_vergroessern | Cache: 1820.0 MB
-2026-03-13 13:25:22,589 [INFO] Loop 1740 | Schmerz: 0.15 | Aktion: pausieren | Cache: 1876.0 MB
-2026-03-13 13:28:15,294 [INFO] Loop 1800 | Schmerz: 0.35 | Aktion: reflex | Cache: 1927.0 MB
-2026-03-13 13:30:05,336 [INFO] Loop 1860 | Schmerz: 0.15 | Aktion: pausieren | Cache: 1983.0 MB
-2026-03-13 13:30:47,246 [INFO] Loop 1920 | Schmerz: 0.35 | Aktion: reflex | Cache: 2040.0 MB
-2026-03-13 13:31:36,738 [INFO] Loop 1980 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 2094.0 MB
-2026-03-13 13:32:02,192 [INFO] Loop 2040 | Schmerz: 0.15 | Aktion: speicher_verkleinern | Cache: 2149.0 MB
-2026-03-13 13:32:15,738 [INFO] Schlaf-Signal erkannt — Einschlafen...
-2026-03-13 13:32:15,925 [INFO] Konsolidiert: 16 Erfahrungen. Gute Nacht.
-2026-03-13 13:32:15,926 [INFO] Aufräumen...
-2026-03-13 13:32:15,938 [INFO] Genesis beendet. Wach seit 2098 Iterationen.
-2026-03-13 13:35:42,045 [INFO] Genesis erwacht...
-2026-03-13 13:35:42,050 [INFO] Aufwach-Typ: schlaf
-2026-03-13 13:35:42,051 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 13:35:42,052 [INFO] Reflex (Wachphase): cpu_notfall
-2026-03-13 13:36:12,144 [INFO] Hauptloop gestartet.
-2026-03-13 13:37:34,569 [INFO] Loop 60 | Schmerz: 0.00 | Aktion: rechenintensitaet_hoch | Cache: 81.0 MB
-2026-03-13 13:38:34,579 [INFO] Loop 120 | Schmerz: 0.22 | Aktion: reflex | Cache: 191.0 MB
-2026-03-13 13:41:27,636 [INFO] Loop 180 | Schmerz: 0.04 | Aktion: speicher_vergroessern | Cache: 300.0 MB
-2026-03-13 13:41:32,668 [INFO] Schlaf-Signal erkannt — Einschlafen...
-2026-03-13 13:41:32,686 [INFO] Konsolidiert: 2 Erfahrungen. Gute Nacht.
-2026-03-13 13:41:32,687 [INFO] Aufräumen...
-2026-03-13 13:41:32,742 [INFO] Genesis beendet. Wach seit 213 Iterationen.
-2026-03-13 13:42:36,576 [INFO] Genesis erwacht...
-2026-03-13 13:42:36,582 [INFO] Aufwach-Typ: schlaf
-2026-03-13 13:42:36,583 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 13:42:36,584 [INFO] Reflex (Wachphase): cpu_notfall
-2026-03-13 13:43:06,679 [INFO] Hauptloop gestartet.
-2026-03-13 13:43:43,012 [INFO] Loop 60 | Schmerz: 0.00 | Aktion: nichts_tun | Cache: 74.0 MB
-2026-03-13 13:44:13,964 [INFO] Loop 120 | Schmerz: 0.22 | Aktion: reflex | Cache: 179.0 MB
-2026-03-13 13:46:46,507 [INFO] Loop 180 | Schmerz: 0.04 | Aktion: speicher_verkleinern | Cache: 273.0 MB
-2026-03-13 13:48:48,118 [INFO] Loop 240 | Schmerz: 0.06 | Aktion: speicher_vergroessern | Cache: 379.0 MB
-2026-03-13 13:49:19,165 [INFO] Loop 300 | Schmerz: 0.09 | Aktion: speicher_verkleinern | Cache: 495.0 MB
-2026-03-13 13:49:58,471 [INFO] Loop 360 | Schmerz: 0.30 | Aktion: reflex | Cache: 549.0 MB
-2026-03-13 13:50:44,554 [INFO] Loop 420 | Schmerz: 0.11 | Aktion: speicher_vergroessern | Cache: 603.0 MB
-2026-03-13 13:53:04,651 [INFO] Loop 480 | Schmerz: 0.32 | Aktion: reflex | Cache: 656.0 MB
-2026-03-13 13:54:19,586 [INFO] Loop 540 | Schmerz: 0.13 | Aktion: rechenintensitaet_hoch | Cache: 708.0 MB
-2026-03-13 13:55:21,652 [INFO] Loop 600 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 763.0 MB
-2026-03-13 13:58:18,224 [INFO] Loop 660 | Schmerz: 0.32 | Aktion: abtastrate_schneller | Cache: 816.0 MB
-2026-03-13 14:00:37,040 [INFO] Loop 720 | Schmerz: 0.15 | Aktion: rechenintensitaet_runter | Cache: 874.0 MB
-2026-03-13 14:02:45,342 [INFO] Loop 780 | Schmerz: 0.35 | Aktion: reflex | Cache: 930.0 MB
-2026-03-13 14:04:49,171 [INFO] Loop 840 | Schmerz: 0.35 | Aktion: reflex | Cache: 984.0 MB
-2026-03-13 14:05:37,606 [INFO] Loop 900 | Schmerz: 0.15 | Aktion: speicher_verkleinern | Cache: 1035.0 MB
-2026-03-13 14:06:02,586 [INFO] Loop 960 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 1087.0 MB
-2026-03-13 14:07:01,024 [INFO] Loop 1020 | Schmerz: 0.15 | Aktion: abtastrate_schneller | Cache: 1146.0 MB
-2026-03-13 14:07:30,285 [INFO] Loop 1080 | Schmerz: 0.15 | Aktion: rechenintensitaet_runter | Cache: 1202.0 MB
-2026-03-13 14:08:07,251 [INFO] Loop 1140 | Schmerz: 0.15 | Aktion: rechenintensitaet_runter | Cache: 1258.0 MB
-2026-03-13 14:08:42,232 [INFO] Loop 1200 | Schmerz: 0.15 | Aktion: rechenintensitaet_hoch | Cache: 1312.0 MB
-2026-03-13 14:09:18,251 [INFO] Loop 1260 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 1365.0 MB
-2026-03-13 14:09:56,122 [INFO] Loop 1320 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 1421.0 MB
-2026-03-13 14:13:23,895 [INFO] Loop 1380 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 1475.0 MB
-2026-03-13 14:16:44,091 [INFO] Loop 1440 | Schmerz: 0.34 | Aktion: reflex | Cache: 1529.0 MB
-2026-03-13 14:18:23,086 [INFO] Loop 1500 | Schmerz: 0.35 | Aktion: reflex | Cache: 1582.0 MB
-2026-03-13 14:20:29,416 [INFO] Loop 1560 | Schmerz: 0.15 | Aktion: pausieren | Cache: 1639.0 MB
-2026-03-13 14:22:40,146 [INFO] Loop 1620 | Schmerz: 0.15 | Aktion: speicher_verkleinern | Cache: 1692.0 MB
-2026-03-13 14:23:20,725 [INFO] Loop 1680 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 1745.0 MB
-2026-03-13 14:23:51,553 [INFO] Loop 1740 | Schmerz: 0.35 | Aktion: reflex | Cache: 1802.0 MB
-2026-03-13 14:24:35,543 [INFO] Loop 1800 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 1859.0 MB
-2026-03-13 14:25:34,168 [INFO] Loop 1860 | Schmerz: 0.15 | Aktion: abtastrate_schneller | Cache: 1915.0 MB
-2026-03-13 14:26:11,599 [INFO] Loop 1920 | Schmerz: 0.15 | Aktion: rechenintensitaet_hoch | Cache: 1969.0 MB
-2026-03-13 14:26:50,271 [INFO] Loop 1980 | Schmerz: 0.15 | Aktion: rechenintensitaet_hoch | Cache: 2026.0 MB
-2026-03-13 14:27:29,092 [INFO] Loop 2040 | Schmerz: 0.35 | Aktion: reflex | Cache: 2084.0 MB
-2026-03-13 14:27:57,975 [INFO] Loop 2100 | Schmerz: 0.35 | Aktion: reflex | Cache: 2139.0 MB
-2026-03-13 14:30:21,382 [INFO] Loop 2160 | Schmerz: 0.35 | Aktion: reflex | Cache: 2192.0 MB
-2026-03-13 14:32:38,609 [INFO] Loop 2220 | Schmerz: 0.35 | Aktion: reflex | Cache: 2251.0 MB
-2026-03-13 14:34:32,796 [INFO] Loop 2280 | Schmerz: 0.15 | Aktion: rechenintensitaet_hoch | Cache: 2308.0 MB
-2026-03-13 14:35:59,282 [INFO] Loop 2340 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 2362.0 MB
-2026-03-13 14:39:52,807 [INFO] Loop 2400 | Schmerz: 0.35 | Aktion: reflex | Cache: 2415.0 MB
-2026-03-13 14:41:16,021 [INFO] Schlaf-Signal erkannt — Einschlafen...
-2026-03-13 14:41:16,112 [INFO] Konsolidiert: 15 Erfahrungen. Gute Nacht.
-2026-03-13 14:41:16,113 [INFO] Aufräumen...
-2026-03-13 14:41:16,132 [INFO] Genesis beendet. Wach seit 2446 Iterationen.
-2026-03-13 14:52:25,142 [INFO] Genesis erwacht...
-2026-03-13 14:52:25,148 [INFO] Aufwach-Typ: schlaf
-2026-03-13 14:52:25,150 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 14:52:55,241 [INFO] Hauptloop gestartet.
-2026-03-13 14:53:54,138 [INFO] Loop 60 | Schmerz: 0.03 | Aktion: speicher_vergroessern | Cache: 125.0 MB
-2026-03-13 14:54:46,293 [INFO] Loop 120 | Schmerz: 0.06 | Aktion: speicher_verkleinern | Cache: 201.0 MB
-2026-03-13 14:55:24,147 [INFO] Loop 180 | Schmerz: 0.11 | Aktion: rechenintensitaet_runter | Cache: 356.0 MB
-2026-03-13 14:57:21,844 [INFO] Loop 240 | Schmerz: 0.34 | Aktion: reflex | Cache: 473.0 MB
-2026-03-13 14:57:58,587 [INFO] Loop 300 | Schmerz: 0.15 | Aktion: speicher_vergroessern | Cache: 500.0 MB
-2026-03-13 14:58:30,191 [INFO] Loop 360 | Schmerz: 0.35 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 14:59:40,564 [INFO] Loop 420 | Schmerz: 0.15 | Aktion: speicher_vergroessern | Cache: 500.0 MB
-2026-03-13 15:02:59,791 [INFO] Loop 480 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 500.0 MB
-2026-03-13 15:04:45,431 [INFO] Loop 540 | Schmerz: 0.35 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:05:23,884 [INFO] Loop 600 | Schmerz: 0.15 | Aktion: speicher_verkleinern | Cache: 500.0 MB
-2026-03-13 15:06:08,166 [INFO] Loop 660 | Schmerz: 0.15 | Aktion: abtastrate_schneller | Cache: 500.0 MB
-2026-03-13 15:06:41,478 [INFO] Loop 720 | Schmerz: 0.35 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:07:11,344 [INFO] Loop 780 | Schmerz: 0.15 | Aktion: rechenintensitaet_hoch | Cache: 500.0 MB
-2026-03-13 15:08:00,432 [INFO] Loop 840 | Schmerz: 0.35 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:08:35,316 [INFO] Loop 900 | Schmerz: 0.15 | Aktion: pausieren | Cache: 500.0 MB
-2026-03-13 15:11:59,600 [INFO] Loop 960 | Schmerz: 0.16 | Aktion: speicher_vergroessern | Cache: 500.0 MB
-2026-03-13 15:16:50,709 [INFO] Loop 1020 | Schmerz: 0.16 | Aktion: pausieren | Cache: 500.0 MB
-2026-03-13 15:18:33,207 [INFO] Loop 1080 | Schmerz: 0.16 | Aktion: pausieren | Cache: 500.0 MB
-2026-03-13 15:23:14,875 [INFO] Loop 1140 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:24:33,274 [INFO] Loop 1200 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:25:01,388 [INFO] Loop 1260 | Schmerz: 0.16 | Aktion: speicher_vergroessern | Cache: 500.0 MB
-2026-03-13 15:26:26,888 [INFO] Loop 1320 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:27:17,877 [INFO] Loop 1380 | Schmerz: 0.15 | Aktion: speicher_verkleinern | Cache: 500.0 MB
-2026-03-13 15:27:52,426 [INFO] Loop 1440 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 500.0 MB
-2026-03-13 15:30:48,438 [INFO] Loop 1500 | Schmerz: 0.35 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:31:36,366 [INFO] Loop 1560 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 500.0 MB
-2026-03-13 15:32:29,851 [INFO] Loop 1620 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 500.0 MB
-2026-03-13 15:33:39,948 [INFO] Loop 1680 | Schmerz: 0.15 | Aktion: abtastrate_langsamer | Cache: 500.0 MB
-2026-03-13 15:36:35,513 [INFO] Loop 1740 | Schmerz: 0.35 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:38:17,091 [INFO] Loop 1800 | Schmerz: 0.15 | Aktion: rechenintensitaet_hoch | Cache: 500.0 MB
-2026-03-13 15:42:07,568 [INFO] Loop 1860 | Schmerz: 0.16 | Aktion: rechenintensitaet_hoch | Cache: 500.0 MB
-2026-03-13 15:42:41,956 [INFO] Loop 1920 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:45:13,945 [INFO] Loop 1980 | Schmerz: 0.34 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 15:49:59,511 [INFO] Loop 2040 | Schmerz: 0.15 | Aktion: nichts_tun | Cache: 500.0 MB
-2026-03-13 15:52:31,034 [INFO] Loop 2100 | Schmerz: 0.15 | Aktion: speicher_verkleinern | Cache: 500.0 MB
-2026-03-13 15:54:49,268 [INFO] Loop 2160 | Schmerz: 0.15 | Aktion: pausieren | Cache: 500.0 MB
-2026-03-13 15:58:30,121 [INFO] Loop 2220 | Schmerz: 0.15 | Aktion: rechenintensitaet_hoch | Cache: 500.0 MB
-2026-03-13 15:59:15,354 [INFO] Loop 2280 | Schmerz: 0.16 | Aktion: speicher_verkleinern | Cache: 500.0 MB
-2026-03-13 16:00:01,838 [INFO] Loop 2340 | Schmerz: 0.16 | Aktion: speicher_verkleinern | Cache: 500.0 MB
-2026-03-13 16:00:53,417 [INFO] Loop 2400 | Schmerz: 0.16 | Aktion: abtastrate_schneller | Cache: 500.0 MB
-2026-03-13 16:01:39,863 [INFO] Loop 2460 | Schmerz: 0.16 | Aktion: pausieren | Cache: 500.0 MB
-2026-03-13 16:02:02,755 [INFO] Loop 2520 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 16:04:02,687 [INFO] Loop 2580 | Schmerz: 0.16 | Aktion: rechenintensitaet_hoch | Cache: 500.0 MB
-2026-03-13 16:05:47,858 [INFO] Loop 2640 | Schmerz: 0.16 | Aktion: speicher_verkleinern | Cache: 500.0 MB
-2026-03-13 16:07:07,033 [INFO] Loop 2700 | Schmerz: 0.16 | Aktion: pausieren | Cache: 500.0 MB
-2026-03-13 16:07:44,544 [INFO] Loop 2760 | Schmerz: 0.16 | Aktion: pausieren | Cache: 500.0 MB
-2026-03-13 16:08:17,824 [INFO] Loop 2820 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 16:09:16,487 [INFO] Loop 2880 | Schmerz: 0.16 | Aktion: abtastrate_schneller | Cache: 500.0 MB
-2026-03-13 16:11:13,242 [INFO] Loop 2940 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 16:12:32,148 [INFO] Loop 3000 | Schmerz: 0.16 | Aktion: pausieren | Cache: 500.0 MB
-2026-03-13 16:15:10,050 [INFO] Loop 3060 | Schmerz: 0.16 | Aktion: abtastrate_langsamer | Cache: 500.0 MB
-2026-03-13 16:19:28,430 [INFO] Loop 3120 | Schmerz: 0.16 | Aktion: pausieren | Cache: 500.0 MB
-2026-03-13 16:21:07,453 [INFO] Loop 3180 | Schmerz: 0.16 | Aktion: rechenintensitaet_runter | Cache: 500.0 MB
-2026-03-13 16:22:55,594 [INFO] Loop 3240 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 16:24:16,363 [INFO] Loop 3300 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 16:26:13,673 [INFO] Loop 3360 | Schmerz: 0.16 | Aktion: abtastrate_schneller | Cache: 500.0 MB
-2026-03-13 16:26:42,262 [INFO] Loop 3420 | Schmerz: 0.16 | Aktion: abtastrate_langsamer | Cache: 500.0 MB
-2026-03-13 16:28:05,184 [INFO] Loop 3480 | Schmerz: 0.16 | Aktion: abtastrate_schneller | Cache: 500.0 MB
-2026-03-13 16:28:52,113 [INFO] Loop 3540 | Schmerz: 0.36 | Aktion: reflex | Cache: 500.0 MB
-2026-03-13 16:30:08,212 [INFO] Schlaf-Signal erkannt — Einschlafen...
-2026-03-13 16:30:08,352 [INFO] Konsolidiert: 19 Erfahrungen. Gute Nacht.
-2026-03-13 16:30:08,352 [INFO] Aufräumen...
-2026-03-13 16:30:08,429 [INFO] Genesis beendet. Wach seit 3600 Iterationen.
-2026-03-13 16:31:07,208 [INFO] Genesis erwacht...
-2026-03-13 16:31:07,216 [INFO] Aufwach-Typ: schlaf
-2026-03-13 16:31:07,217 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 16:31:37,309 [INFO] Hauptloop gestartet.
-2026-03-13 16:31:40,314 [INFO] Aufräumen...
-2026-03-13 16:31:40,393 [INFO] Genesis beendet. Wach seit 30 Iterationen.
-2026-03-13 16:36:07,940 [INFO] Genesis erwacht...
-2026-03-13 16:36:07,955 [INFO] Aufwach-Typ: tod
-2026-03-13 16:36:07,957 [WARNING] Tod erkannt! Zeitlücke: 267.6 Sekunden, letzter Schmerz: 0.01
-2026-03-13 16:36:07,958 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 16:36:38,046 [INFO] Hauptloop gestartet.
-2026-03-13 16:36:38,049 [INFO] Aufräumen...
-2026-03-13 16:36:38,125 [INFO] Genesis beendet. Wach seit 30 Iterationen.
-2026-03-13 16:39:34,520 [INFO] Genesis erwacht...
-2026-03-13 16:39:34,527 [INFO] Aufwach-Typ: schlaf
-2026-03-13 16:39:34,529 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 16:40:04,624 [INFO] Hauptloop gestartet.
-2026-03-13 16:40:04,686 [INFO] Aufräumen...
-2026-03-13 16:40:04,698 [INFO] Genesis beendet. Wach seit 30 Iterationen.
-2026-03-13 16:40:58,882 [INFO] Genesis erwacht...
-2026-03-13 16:40:58,893 [INFO] Aufwach-Typ: tod
-2026-03-13 16:40:58,893 [WARNING] Tod erkannt! Zeitlücke: 54.2 Sekunden, letzter Schmerz: 0.00
-2026-03-13 16:40:58,895 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 16:40:58,897 [INFO] Reflex (Wachphase): cpu_notfall
-2026-03-13 16:41:28,996 [INFO] Hauptloop gestartet.
-2026-03-13 16:42:34,765 [INFO] Loop 60 | Schmerz: 0.23 | Aktion: reflex | Cache: 157.0 MB
-2026-03-13 16:43:36,368 [INFO] Loop 120 | Schmerz: 0.12 | Aktion: rechenintensitaet_runter | Cache: 310.4 MB
-2026-03-13 16:44:42,241 [INFO] Manueller Abbruch (Ctrl+C)
-2026-03-13 16:44:42,243 [INFO] Aufräumen...
-2026-03-13 16:44:42,315 [INFO] Genesis beendet. Wach seit 161 Iterationen.
-2026-03-13 16:47:03,191 [INFO] Genesis erwacht...
-2026-03-13 16:47:03,197 [INFO] Aufwach-Typ: tod
-2026-03-13 16:47:03,198 [WARNING] Tod erkannt! Zeitlücke: 140.9 Sekunden, letzter Schmerz: 0.14
-2026-03-13 16:47:03,198 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 16:47:33,299 [INFO] Hauptloop gestartet.
-2026-03-13 16:48:03,004 [INFO] Manueller Abbruch (Ctrl+C)
-2026-03-13 16:48:03,005 [INFO] Aufräumen...
-2026-03-13 16:48:03,089 [INFO] Genesis beendet. Wach seit 39 Iterationen.
-2026-03-13 16:49:09,550 [INFO] Genesis erwacht...
-2026-03-13 16:49:09,559 [INFO] Aufwach-Typ: tod
-2026-03-13 16:49:09,559 [WARNING] Tod erkannt! Zeitlücke: 66.5 Sekunden, letzter Schmerz: 0.00
-2026-03-13 16:49:09,560 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 16:49:39,655 [INFO] Hauptloop gestartet.
-2026-03-13 16:50:32,703 [INFO] Schlaf-Signal erkannt — Einschlafen...
-2026-03-13 16:50:32,745 [INFO] Konsolidiert: 14 Erfahrungen. Gute Nacht.
-2026-03-13 16:50:32,746 [INFO] Aufräumen...
-2026-03-13 16:50:32,810 [INFO] Genesis beendet. Wach seit 84 Iterationen.
-2026-03-13 16:51:16,384 [INFO] Genesis erwacht...
-2026-03-13 16:51:16,390 [INFO] Aufwach-Typ: schlaf
-2026-03-13 16:51:16,391 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 16:51:16,392 [INFO] Reflex (Wachphase): cpu_notfall
-2026-03-13 16:51:46,488 [INFO] Hauptloop gestartet.
-2026-03-13 16:55:33,996 [INFO] Loop 60 | Schmerz: 0.22 | Aktion: reflex | Cache: 111.2 MB
-2026-03-13 16:59:41,721 [INFO] Loop 120 | Schmerz: 0.17 | Aktion: abtastrate_schneller | Cache: 417.6 MB
-2026-03-13 17:02:05,296 [INFO] Loop 180 | Schmerz: 0.34 | Aktion: nichts_tun | Cache: 778.6 MB
-2026-03-13 17:05:23,065 [INFO] Loop 240 | Schmerz: 0.39 | Aktion: abtastrate_schneller | Cache: 885.2 MB
-2026-03-13 17:09:06,563 [INFO] Loop 300 | Schmerz: 0.44 | Aktion: pausieren | Cache: 993.2 MB
-2026-03-13 17:12:02,754 [INFO] Loop 360 | Schmerz: 0.44 | Aktion: abtastrate_schneller | Cache: 997.8 MB
-2026-03-13 17:12:36,404 [INFO] Loop 420 | Schmerz: 0.44 | Aktion: abtastrate_schneller | Cache: 999.6 MB
-2026-03-13 17:13:23,389 [INFO] Loop 480 | Schmerz: 0.44 | Aktion: speicher_verkleinern | Cache: 999.4 MB
-2026-03-13 17:14:02,832 [INFO] Loop 540 | Schmerz: 0.64 | Aktion: reflex | Cache: 996.2 MB
-2026-03-13 17:15:05,781 [INFO] Loop 600 | Schmerz: 0.44 | Aktion: abtastrate_langsamer | Cache: 998.0 MB
-2026-03-13 17:15:28,438 [INFO] Schlaf-Signal erkannt — Einschlafen...
-2026-03-13 17:15:29,321 [INFO] Konsolidiert: 553 Erfahrungen. Gute Nacht.
-2026-03-13 17:15:29,322 [INFO] Aufräumen...
-2026-03-13 17:15:29,373 [INFO] Genesis beendet. Wach seit 659 Iterationen.
-2026-03-13 17:22:06,176 [INFO] Genesis erwacht...
-2026-03-13 17:22:06,183 [INFO] Aufwach-Typ: schlaf
-2026-03-13 17:22:06,184 [INFO] Wachphase: 30 Sekunden nur Fühlen...
-2026-03-13 17:22:36,279 [INFO] Hauptloop gestartet.
-2026-03-13 17:23:18,621 [INFO] Loop 60 | Schmerz: 0.21 | Aktion: reflex | Cache: 51.4 MB
-2026-03-13 17:24:04,399 [INFO] Loop 120 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 0.8 MB
-2026-03-13 17:25:15,375 [INFO] Loop 180 | Schmerz: 0.04 | Aktion: speicher_verkleinern | Cache: 51.0 MB
-2026-03-13 17:26:04,482 [INFO] Loop 240 | Schmerz: 0.00 | Aktion: rechenintensitaet_hoch | Cache: 1.4 MB
-2026-03-13 17:28:52,722 [INFO] Loop 300 | Schmerz: 0.10 | Aktion: speicher_verkleinern | Cache: 0.2 MB
-2026-03-13 17:29:44,275 [INFO] Loop 360 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 1.8 MB
-2026-03-13 17:32:23,866 [INFO] Loop 420 | Schmerz: 0.00 | Aktion: pausieren | Cache: 2.2 MB
-2026-03-13 17:34:25,494 [INFO] Loop 480 | Schmerz: 0.22 | Aktion: reflex | Cache: 105.2 MB
-2026-03-13 17:34:47,988 [INFO] Loop 540 | Schmerz: 0.21 | Aktion: reflex | Cache: 52.2 MB
-2026-03-13 17:36:04,908 [INFO] Loop 600 | Schmerz: 0.22 | Aktion: reflex | Cache: 103.2 MB
-2026-03-13 17:38:07,685 [INFO] Loop 660 | Schmerz: 0.00 | Aktion: speicher_verkleinern | Cache: 0.2 MB
-2026-03-13 17:41:54,132 [INFO] Loop 720 | Schmerz: 0.01 | Aktion: pausieren | Cache: 51.2 MB
-2026-03-13 17:44:53,006 [INFO] Loop 780 | Schmerz: 0.05 | Aktion: speicher_verkleinern | Cache: 53.6 MB
-2026-03-13 17:45:57,573 [INFO] Loop 840 | Schmerz: 0.04 | Aktion: speicher_verkleinern | Cache: 50.6 MB
-2026-03-13 17:46:53,043 [INFO] Loop 900 | Schmerz: 0.01 | Aktion: pausieren | Cache: 0.8 MB
-2026-03-13 17:49:26,766 [INFO] Loop 960 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 102.8 MB
-2026-03-13 17:52:54,984 [INFO] Loop 1020 | Schmerz: 0.00 | Aktion: rechenintensitaet_hoch | Cache: 0.6 MB
-2026-03-13 17:54:35,291 [INFO] Loop 1080 | Schmerz: 0.02 | Aktion: abtastrate_langsamer | Cache: 102.8 MB
-2026-03-13 17:58:01,020 [INFO] Loop 1140 | Schmerz: 0.21 | Aktion: reflex | Cache: 52.8 MB
-2026-03-13 18:01:09,480 [INFO] Loop 1200 | Schmerz: 0.09 | Aktion: abtastrate_schneller | Cache: 257.0 MB
-2026-03-13 18:01:50,284 [INFO] Loop 1260 | Schmerz: 0.27 | Aktion: reflex | Cache: 206.0 MB
-2026-03-13 18:02:47,186 [INFO] Loop 1320 | Schmerz: 0.07 | Aktion: speicher_verkleinern | Cache: 105.4 MB
-2026-03-13 18:05:20,478 [INFO] Loop 1380 | Schmerz: 0.22 | Aktion: reflex | Cache: 105.2 MB
-2026-03-13 18:08:07,399 [INFO] Loop 1440 | Schmerz: 0.21 | Aktion: reflex | Cache: 50.8 MB
-2026-03-13 18:08:42,994 [INFO] Loop 1500 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB
-2026-03-13 18:09:25,310 [INFO] Loop 1560 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB
-2026-03-13 18:10:23,164 [INFO] Loop 1620 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 54.2 MB
-2026-03-13 18:12:53,663 [INFO] Loop 1680 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 55.8 MB
-2026-03-13 18:14:20,696 [INFO] Loop 1740 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 52.0 MB
-2026-03-13 18:15:10,976 [INFO] Loop 1800 | Schmerz: 0.02 | Aktion: abtastrate_langsamer | Cache: 103.4 MB
-2026-03-13 18:16:06,644 [INFO] Loop 1860 | Schmerz: 0.21 | Aktion: reflex | Cache: 1.8 MB
-2026-03-13 18:17:19,091 [INFO] Loop 1920 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 101.2 MB
-2026-03-13 18:20:46,665 [INFO] Loop 1980 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 104.2 MB
-2026-03-13 18:21:59,326 [INFO] Loop 2040 | Schmerz: 0.21 | Aktion: reflex | Cache: 1.6 MB
-2026-03-13 18:23:03,065 [INFO] Loop 2100 | Schmerz: 0.14 | Aktion: rechenintensitaet_runter | Cache: 1.4 MB
-2026-03-13 18:25:10,064 [INFO] Loop 2160 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.8 MB
-2026-03-13 18:28:36,006 [INFO] Loop 2220 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 52.0 MB
-2026-03-13 18:31:10,282 [INFO] Loop 2280 | Schmerz: 0.20 | Aktion: reflex | Cache: 52.2 MB
+2026-03-15 00:02:28,565 [INFO] Loop 1380 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 1.2 MB
+2026-03-15 00:06:05,317 [INFO] Loop 1440 | Schmerz: 0.06 | Aktion: rechenintensitaet_runter | Cache: 51.8 MB
+2026-03-15 00:09:46,031 [INFO] Loop 1500 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 0.4 MB
+2026-03-15 00:12:22,048 [INFO] Loop 1560 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 0.8 MB
+2026-03-15 00:16:38,694 [INFO] Loop 1620 | Schmerz: 0.02 | Aktion: pausieren | Cache: 106.8 MB
+2026-03-15 00:19:42,318 [INFO] Loop 1680 | Schmerz: 0.04 | Aktion: abtastrate_langsamer | Cache: 156.4 MB
+2026-03-15 00:20:15,888 [INFO] Loop 1740 | Schmerz: 0.02 | Aktion: rechenintensitaet_hoch | Cache: 103.4 MB
+2026-03-15 00:21:26,886 [INFO] Loop 1800 | Schmerz: 0.01 | Aktion: pausieren | Cache: 1.0 MB
+2026-03-15 00:24:21,980 [INFO] Loop 1860 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 0.8 MB
+2026-03-15 00:26:31,393 [INFO] Loop 1920 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.4 MB
+2026-03-15 00:28:01,064 [INFO] Loop 1980 | Schmerz: 0.22 | Aktion: reflex | Cache: 101.4 MB
+2026-03-15 00:33:21,396 [INFO] Loop 2040 | Schmerz: 0.07 | Aktion: speicher_verkleinern | Cache: 103.4 MB
+2026-03-15 00:37:03,183 [INFO] Loop 2100 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 52.2 MB
+2026-03-15 00:37:42,200 [INFO] Loop 2160 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 51.2 MB
+2026-03-15 00:38:24,200 [INFO] Loop 2220 | Schmerz: 0.05 | Aktion: rechenintensitaet_hoch | Cache: 51.2 MB
+2026-03-15 00:40:50,555 [INFO] Loop 2280 | Schmerz: 0.27 | Aktion: reflex | Cache: 207.0 MB
+2026-03-15 00:42:14,700 [INFO] Loop 2340 | Schmerz: 0.27 | Aktion: reflex | Cache: 212.8 MB
+2026-03-15 00:44:27,753 [INFO] Loop 2400 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 53.4 MB
+2026-03-15 00:48:49,503 [INFO] Loop 2460 | Schmerz: 0.04 | Aktion: speicher_verkleinern | Cache: 52.2 MB
+2026-03-15 00:53:36,024 [INFO] Loop 2520 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 55.2 MB
+2026-03-15 00:54:54,859 [INFO] Loop 2580 | Schmerz: 0.01 | Aktion: pausieren | Cache: 0.8 MB
+2026-03-15 00:58:12,947 [INFO] Loop 2640 | Schmerz: 0.20 | Aktion: abtastrate_langsamer | Cache: 105.8 MB
+2026-03-15 01:01:37,446 [INFO] Loop 2700 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 3.6 MB
+2026-03-15 01:02:14,583 [INFO] Loop 2760 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 104.8 MB
+2026-03-15 01:04:29,282 [INFO] Loop 2820 | Schmerz: 0.02 | Aktion: speicher_verkleinern | Cache: 3.4 MB
+2026-03-15 01:06:27,570 [INFO] Loop 2880 | Schmerz: 0.21 | Aktion: reflex | Cache: 51.0 MB
+2026-03-15 01:08:43,464 [INFO] Loop 2940 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.6 MB
+2026-03-15 01:12:42,894 [INFO] Loop 3000 | Schmerz: 0.21 | Aktion: reflex | Cache: 4.2 MB
+2026-03-15 01:15:26,518 [INFO] Loop 3060 | Schmerz: 0.10 | Aktion: nichts_tun | Cache: 160.6 MB
+2026-03-15 01:16:36,454 [INFO] Loop 3120 | Schmerz: 0.08 | Aktion: abtastrate_langsamer | Cache: 215.2 MB
+2026-03-15 01:17:41,877 [INFO] Loop 3180 | Schmerz: 0.08 | Aktion: nichts_tun | Cache: 162.0 MB
+2026-03-15 01:21:48,438 [INFO] Loop 3240 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 1.2 MB
+2026-03-15 01:22:57,324 [INFO] Loop 3300 | Schmerz: 0.16 | Aktion: abtastrate_langsamer | Cache: 0.6 MB
+2026-03-15 01:26:48,140 [INFO] Loop 3360 | Schmerz: 0.12 | Aktion: pausieren | Cache: 1.2 MB
+2026-03-15 01:30:53,505 [INFO] Loop 3420 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 0.6 MB
+2026-03-15 01:35:46,285 [INFO] Loop 3480 | Schmerz: 0.30 | Aktion: reflex | Cache: 256.2 MB
+2026-03-15 01:37:29,405 [INFO] Loop 3540 | Schmerz: 0.17 | Aktion: pausieren | Cache: 259.2 MB
+2026-03-15 01:38:15,916 [INFO] Loop 3600 | Schmerz: 0.03 | Aktion: rechenintensitaet_runter | Cache: 108.0 MB
+2026-03-15 01:39:35,170 [INFO] Loop 3660 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 51.2 MB
+2026-03-15 01:43:09,124 [INFO] Loop 3720 | Schmerz: 0.03 | Aktion: nichts_tun | Cache: 104.0 MB
+2026-03-15 01:45:39,051 [INFO] Loop 3780 | Schmerz: 0.05 | Aktion: abtastrate_schneller | Cache: 152.6 MB
+2026-03-15 01:46:16,469 [INFO] Loop 3840 | Schmerz: 0.03 | Aktion: rechenintensitaet_hoch | Cache: 105.0 MB
+2026-03-15 01:48:28,033 [INFO] Loop 3900 | Schmerz: 0.11 | Aktion: pausieren | Cache: 0.4 MB
+2026-03-15 01:53:23,351 [INFO] Loop 3960 | Schmerz: 0.04 | Aktion: rechenintensitaet_hoch | Cache: 51.4 MB
+2026-03-15 01:58:13,501 [INFO] Loop 4020 | Schmerz: 0.21 | Aktion: reflex | Cache: 53.6 MB
+2026-03-15 02:00:39,569 [INFO] Loop 4080 | Schmerz: 0.03 | Aktion: abtastrate_schneller | Cache: 107.8 MB
+2026-03-15 02:05:25,954 [INFO] Loop 4140 | Schmerz: 0.07 | Aktion: abtastrate_langsamer | Cache: 52.0 MB
+2026-03-15 02:07:19,572 [INFO] Loop 4200 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 51.8 MB
+2026-03-15 02:11:42,289 [INFO] Loop 4260 | Schmerz: 0.18 | Aktion: rechenintensitaet_hoch | Cache: 53.6 MB
+2026-03-15 02:13:03,337 [INFO] Loop 4320 | Schmerz: 0.28 | Aktion: reflex | Cache: 203.6 MB
+2026-03-15 02:14:07,346 [INFO] Loop 4380 | Schmerz: 0.03 | Aktion: rechenintensitaet_runter | Cache: 102.0 MB
+2026-03-15 02:19:22,211 [INFO] Loop 4440 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 1.2 MB
+2026-03-15 02:22:21,483 [INFO] Loop 4500 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 51.8 MB
+2026-03-15 02:24:00,681 [INFO] Loop 4560 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 102.2 MB
+2026-03-15 02:26:13,747 [INFO] Loop 4620 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 02:27:46,436 [INFO] Loop 4680 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 51.4 MB
+2026-03-15 02:31:54,515 [INFO] Loop 4740 | Schmerz: 0.21 | Aktion: reflex | Cache: 1.6 MB
+2026-03-15 02:32:40,538 [INFO] Loop 4800 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 1.0 MB
+2026-03-15 02:33:51,343 [INFO] Loop 4860 | Schmerz: 0.23 | Aktion: reflex | Cache: 102.0 MB
+2026-03-15 02:36:03,148 [INFO] Loop 4920 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 0.4 MB
+2026-03-15 02:38:11,411 [INFO] Loop 4980 | Schmerz: 0.01 | Aktion: pausieren | Cache: 51.2 MB
+2026-03-15 02:40:37,787 [INFO] Loop 5040 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 3.2 MB
+2026-03-15 02:44:55,538 [INFO] Loop 5100 | Schmerz: 0.01 | Aktion: pausieren | Cache: 0.8 MB
+2026-03-15 02:49:16,761 [INFO] Loop 5160 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 54.6 MB
+2026-03-15 02:51:59,319 [INFO] Loop 5220 | Schmerz: 0.04 | Aktion: rechenintensitaet_runter | Cache: 52.4 MB
+2026-03-15 02:56:25,584 [INFO] Loop 5280 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 54.8 MB
+2026-03-15 03:01:21,776 [INFO] Loop 5340 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 101.6 MB
+2026-03-15 03:06:04,329 [INFO] Loop 5400 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 03:10:14,027 [INFO] Loop 5460 | Schmerz: 0.08 | Aktion: nichts_tun | Cache: 204.8 MB
+2026-03-15 03:14:57,260 [INFO] Loop 5520 | Schmerz: 0.03 | Aktion: speicher_vergroessern | Cache: 153.2 MB
+2026-03-15 03:18:50,836 [INFO] Loop 5580 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 1.2 MB
+2026-03-15 03:21:28,749 [INFO] Loop 5640 | Schmerz: 0.10 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 03:23:15,755 [INFO] Loop 5700 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.8 MB
+2026-03-15 03:27:53,073 [INFO] Loop 5760 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 1.4 MB
+2026-03-15 03:32:48,947 [INFO] Loop 5820 | Schmerz: 0.19 | Aktion: nichts_tun | Cache: 0.8 MB
+2026-03-15 03:35:59,129 [INFO] Loop 5880 | Schmerz: 0.03 | Aktion: abtastrate_langsamer | Cache: 106.4 MB
+2026-03-15 03:38:15,225 [INFO] Loop 5940 | Schmerz: 0.10 | Aktion: pausieren | Cache: 53.2 MB
+2026-03-15 03:39:18,314 [INFO] Loop 6000 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 1.8 MB
+2026-03-15 03:43:13,576 [INFO] Loop 6060 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.6 MB
+2026-03-15 03:44:52,390 [INFO] Loop 6120 | Schmerz: 0.04 | Aktion: rechenintensitaet_runter | Cache: 0.4 MB
+2026-03-15 03:47:02,367 [INFO] Loop 6180 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 03:52:46,990 [INFO] Loop 6240 | Schmerz: 0.21 | Aktion: reflex | Cache: 52.8 MB
+2026-03-15 03:55:34,132 [INFO] Loop 6300 | Schmerz: 0.09 | Aktion: pausieren | Cache: 0.4 MB
+2026-03-15 03:57:54,713 [INFO] Loop 6360 | Schmerz: 0.09 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 04:02:18,961 [INFO] Loop 6420 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.4 MB
+2026-03-15 04:04:43,545 [INFO] Loop 6480 | Schmerz: 0.21 | Aktion: reflex | Cache: 2.8 MB
+2026-03-15 04:09:47,449 [INFO] Loop 6540 | Schmerz: 0.14 | Aktion: pausieren | Cache: 1.4 MB
+2026-03-15 04:11:52,670 [INFO] Loop 6600 | Schmerz: 0.21 | Aktion: reflex | Cache: 2.8 MB
+2026-03-15 04:16:21,291 [INFO] Loop 6660 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 0.4 MB
+2026-03-15 04:18:48,945 [INFO] Loop 6720 | Schmerz: 0.11 | Aktion: pausieren | Cache: 0.8 MB
+2026-03-15 04:23:48,684 [INFO] Loop 6780 | Schmerz: 0.05 | Aktion: abtastrate_langsamer | Cache: 154.8 MB
+2026-03-15 04:27:10,433 [INFO] Loop 6840 | Schmerz: 0.21 | Aktion: reflex | Cache: 1.0 MB
+2026-03-15 04:29:04,761 [INFO] Loop 6900 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 04:30:41,954 [INFO] Loop 6960 | Schmerz: 0.13 | Aktion: pausieren | Cache: 1.6 MB
+2026-03-15 04:32:14,467 [INFO] Loop 7020 | Schmerz: 0.03 | Aktion: pausieren | Cache: 103.6 MB
+2026-03-15 04:33:54,187 [INFO] Loop 7080 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 04:35:41,395 [INFO] Loop 7140 | Schmerz: 0.21 | Aktion: reflex | Cache: 3.2 MB
+2026-03-15 04:37:24,130 [INFO] Loop 7200 | Schmerz: 0.03 | Aktion: pausieren | Cache: 105.2 MB
+2026-03-15 04:39:02,248 [INFO] Loop 7260 | Schmerz: 0.03 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 04:41:02,245 [INFO] Loop 7320 | Schmerz: 0.09 | Aktion: pausieren | Cache: 0.4 MB
+2026-03-15 04:46:13,359 [INFO] Loop 7380 | Schmerz: 0.03 | Aktion: speicher_verkleinern | Cache: 5.0 MB
+2026-03-15 04:49:46,688 [INFO] Loop 7440 | Schmerz: 0.05 | Aktion: rechenintensitaet_hoch | Cache: 156.8 MB
+2026-03-15 04:51:17,545 [INFO] Loop 7500 | Schmerz: 0.03 | Aktion: pausieren | Cache: 104.0 MB
+2026-03-15 04:52:19,601 [INFO] Loop 7560 | Schmerz: 0.10 | Aktion: pausieren | Cache: 2.8 MB
+2026-03-15 04:53:48,877 [INFO] Loop 7620 | Schmerz: 0.16 | Aktion: abtastrate_schneller | Cache: 2.4 MB
+2026-03-15 04:57:57,218 [INFO] Loop 7680 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.6 MB
+2026-03-15 04:59:20,518 [INFO] Loop 7740 | Schmerz: 0.04 | Aktion: pausieren | Cache: 0.4 MB
+2026-03-15 05:00:38,571 [INFO] Loop 7800 | Schmerz: 0.03 | Aktion: nichts_tun | Cache: 103.0 MB
+2026-03-15 05:02:17,050 [INFO] Loop 7860 | Schmerz: 0.08 | Aktion: pausieren | Cache: 208.8 MB
+2026-03-15 05:04:35,233 [INFO] Loop 7920 | Schmerz: 0.23 | Aktion: reflex | Cache: 102.8 MB
+2026-03-15 05:06:47,211 [INFO] Loop 7980 | Schmerz: 0.05 | Aktion: nichts_tun | Cache: 156.6 MB
+2026-03-15 05:08:58,697 [INFO] Loop 8040 | Schmerz: 0.12 | Aktion: pausieren | Cache: 104.8 MB
+2026-03-15 05:13:11,524 [INFO] Loop 8100 | Schmerz: 0.18 | Aktion: abtastrate_schneller | Cache: 155.4 MB
+2026-03-15 05:13:54,050 [INFO] Loop 8160 | Schmerz: 0.16 | Aktion: pausieren | Cache: 3.2 MB
+2026-03-15 05:14:45,481 [INFO] Loop 8220 | Schmerz: 0.04 | Aktion: pausieren | Cache: 0.4 MB
+2026-03-15 05:16:04,339 [INFO] Loop 8280 | Schmerz: 0.21 | Aktion: pausieren | Cache: 106.4 MB
+2026-03-15 05:17:47,285 [INFO] Loop 8340 | Schmerz: 0.03 | Aktion: abtastrate_langsamer | Cache: 104.4 MB
+2026-03-15 05:18:55,880 [INFO] Loop 8400 | Schmerz: 0.21 | Aktion: reflex | Cache: 51.6 MB
+2026-03-15 05:19:38,836 [INFO] Loop 8460 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.4 MB
+2026-03-15 05:20:54,786 [INFO] Loop 8520 | Schmerz: 0.01 | Aktion: pausieren | Cache: 1.8 MB
+2026-03-15 05:21:51,754 [INFO] Loop 8580 | Schmerz: 0.21 | Aktion: reflex | Cache: 2.6 MB
+2026-03-15 05:22:29,670 [INFO] Loop 8640 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 0.8 MB
+2026-03-15 05:23:17,313 [INFO] Loop 8700 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 55.4 MB
+2026-03-15 05:24:49,372 [INFO] Loop 8760 | Schmerz: 0.12 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 05:26:35,080 [INFO] Loop 8820 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 1.0 MB
+2026-03-15 05:27:48,455 [INFO] Loop 8880 | Schmerz: 0.06 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 05:30:51,188 [INFO] Loop 8940 | Schmerz: 0.04 | Aktion: nichts_tun | Cache: 0.4 MB
+2026-03-15 05:35:34,888 [INFO] Loop 9000 | Schmerz: 0.03 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 05:37:26,568 [INFO] Loop 9060 | Schmerz: 0.01 | Aktion: pausieren | Cache: 1.8 MB
+2026-03-15 05:42:28,573 [INFO] Loop 9120 | Schmerz: 0.07 | Aktion: pausieren | Cache: 1.2 MB
+2026-03-15 05:45:56,870 [INFO] Loop 9180 | Schmerz: 0.15 | Aktion: pausieren | Cache: 50.8 MB
+2026-03-15 05:51:53,083 [INFO] Loop 9240 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 52.2 MB
+2026-03-15 05:53:23,266 [INFO] Loop 9300 | Schmerz: 0.06 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 05:54:58,162 [INFO] Loop 9360 | Schmerz: 0.17 | Aktion: pausieren | Cache: 106.8 MB
+2026-03-15 05:56:41,814 [INFO] Loop 9420 | Schmerz: 0.03 | Aktion: abtastrate_schneller | Cache: 2.6 MB
+2026-03-15 06:01:24,183 [INFO] Loop 9480 | Schmerz: 0.20 | Aktion: pausieren | Cache: 305.0 MB
+2026-03-15 06:04:38,404 [INFO] Schlaf-Signal erkannt — Einschlafen...
+2026-03-15 06:04:39,708 [INFO] Konsolidiert: 604 Erfahrungen. Gute Nacht.
+2026-03-15 06:04:39,709 [INFO] Aufräumen...
+2026-03-15 06:04:39,747 [INFO] Genesis beendet. Wach seit 9545 Iterationen.
+2026-03-15 06:04:47,013 [INFO] Genesis erwacht...
+2026-03-15 06:04:47,019 [INFO] Aufwach-Typ: schlaf
+2026-03-15 06:04:47,020 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 06:05:17,119 [INFO] Hauptloop gestartet.
+2026-03-15 06:06:08,362 [INFO] Loop 60 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 1.8 MB
+2026-03-15 06:08:33,491 [INFO] Loop 120 | Schmerz: 0.21 | Aktion: reflex | Cache: 51.4 MB
+2026-03-15 06:13:34,876 [INFO] Loop 180 | Schmerz: 0.03 | Aktion: rechenintensitaet_hoch | Cache: 104.4 MB
+2026-03-15 06:18:09,935 [INFO] Loop 240 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 3.0 MB
+2026-03-15 06:23:35,420 [INFO] Loop 300 | Schmerz: 0.09 | Aktion: rechenintensitaet_hoch | Cache: 108.0 MB
+2026-03-15 06:27:38,802 [INFO] Loop 360 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 51.6 MB
+2026-03-15 06:30:38,680 [INFO] Loop 420 | Schmerz: 0.13 | Aktion: pausieren | Cache: 0.6 MB
+2026-03-15 06:34:14,722 [INFO] Loop 480 | Schmerz: 0.04 | Aktion: rechenintensitaet_runter | Cache: 154.4 MB
+2026-03-15 06:38:00,556 [INFO] Loop 540 | Schmerz: 0.01 | Aktion: pausieren | Cache: 2.0 MB
+2026-03-15 06:43:06,691 [INFO] Loop 600 | Schmerz: 0.19 | Aktion: reflex | Cache: 2.0 MB
+2026-03-15 06:46:32,367 [INFO] Loop 660 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.8 MB
+2026-03-15 06:51:47,290 [INFO] Loop 720 | Schmerz: 0.02 | Aktion: rechenintensitaet_hoch | Cache: 102.6 MB
+2026-03-15 06:54:30,491 [INFO] Loop 780 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 1.2 MB
+2026-03-15 06:56:54,508 [INFO] Loop 840 | Schmerz: 0.12 | Aktion: rechenintensitaet_hoch | Cache: 208.2 MB
+2026-03-15 06:57:52,508 [INFO] Loop 900 | Schmerz: 0.01 | Aktion: pausieren | Cache: 0.8 MB
+2026-03-15 07:00:55,856 [INFO] Schlaf-Signal erkannt — Einschlafen...
+2026-03-15 07:00:56,131 [INFO] Konsolidiert: 64 Erfahrungen. Gute Nacht.
+2026-03-15 07:00:56,133 [INFO] Aufräumen...
+2026-03-15 07:00:56,171 [INFO] Genesis beendet. Wach seit 983 Iterationen.
+2026-03-15 07:03:43,980 [INFO] Genesis erwacht...
+2026-03-15 07:03:43,986 [INFO] Aufwach-Typ: schlaf
+2026-03-15 07:03:43,987 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 07:04:14,087 [INFO] Hauptloop gestartet.
+2026-03-15 07:05:18,527 [INFO] Loop 60 | Schmerz: 0.21 | Aktion: reflex | Cache: 52.0 MB
+2026-03-15 07:08:34,626 [INFO] Loop 120 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 50.4 MB
+2026-03-15 07:13:32,916 [INFO] Loop 180 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 2.4 MB
+2026-03-15 07:16:29,101 [INFO] Loop 240 | Schmerz: 0.26 | Aktion: abtastrate_schneller | Cache: 608.8 MB
+2026-03-15 07:18:40,472 [INFO] Loop 300 | Schmerz: 0.32 | Aktion: abtastrate_schneller | Cache: 658.8 MB
+2026-03-15 07:19:56,413 [INFO] Loop 360 | Schmerz: 0.04 | Aktion: speicher_vergroessern | Cache: 51.0 MB
+2026-03-15 07:21:27,702 [INFO] Loop 420 | Schmerz: 0.04 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 07:22:25,188 [INFO] Loop 480 | Schmerz: 0.04 | Aktion: abtastrate_schneller | Cache: 0.8 MB
+2026-03-15 07:26:26,361 [INFO] Loop 540 | Schmerz: 0.04 | Aktion: speicher_verkleinern | Cache: 0.2 MB
+2026-03-15 07:31:05,902 [INFO] Loop 600 | Schmerz: 0.32 | Aktion: reflex | Cache: 311.0 MB
+2026-03-15 07:33:09,355 [INFO] Loop 660 | Schmerz: 0.22 | Aktion: reflex | Cache: 105.6 MB
+2026-03-15 07:33:45,600 [INFO] Loop 720 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 1.2 MB
+2026-03-15 07:34:51,330 [INFO] Loop 780 | Schmerz: 0.25 | Aktion: reflex | Cache: 154.6 MB
+2026-03-15 07:36:02,577 [INFO] Loop 840 | Schmerz: 0.05 | Aktion: abtastrate_schneller | Cache: 159.0 MB
+2026-03-15 07:38:03,354 [INFO] Loop 900 | Schmerz: 0.21 | Aktion: pausieren | Cache: 53.2 MB
+2026-03-15 07:41:26,741 [INFO] Loop 960 | Schmerz: 0.26 | Aktion: reflex | Cache: 52.2 MB
+2026-03-15 07:45:05,094 [INFO] Loop 1020 | Schmerz: 0.04 | Aktion: pausieren | Cache: 2.6 MB
+2026-03-15 07:46:47,916 [INFO] Loop 1080 | Schmerz: 0.06 | Aktion: pausieren | Cache: 103.2 MB
+2026-03-15 07:47:47,216 [INFO] Loop 1140 | Schmerz: 0.03 | Aktion: pausieren | Cache: 112.6 MB
+2026-03-15 07:48:52,682 [INFO] Loop 1200 | Schmerz: 0.09 | Aktion: pausieren | Cache: 1.2 MB
+2026-03-15 07:49:59,706 [INFO] Loop 1260 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 1.8 MB
+2026-03-15 07:51:46,573 [INFO] Loop 1320 | Schmerz: 0.18 | Aktion: nichts_tun | Cache: 0.4 MB
+2026-03-15 07:52:23,119 [INFO] Loop 1380 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 50.6 MB
+2026-03-15 07:53:07,446 [INFO] Loop 1440 | Schmerz: 0.02 | Aktion: nichts_tun | Cache: 102.2 MB
+2026-03-15 07:56:04,653 [INFO] Loop 1500 | Schmerz: 0.01 | Aktion: pausieren | Cache: 52.6 MB
+2026-03-15 07:58:22,976 [INFO] Loop 1560 | Schmerz: 0.05 | Aktion: abtastrate_schneller | Cache: 157.2 MB
+2026-03-15 08:00:24,836 [INFO] Loop 1620 | Schmerz: 0.21 | Aktion: reflex | Cache: 2.6 MB
+2026-03-15 08:03:59,430 [INFO] Loop 1680 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 50.4 MB
+2026-03-15 08:07:36,687 [INFO] Loop 1740 | Schmerz: 0.14 | Aktion: pausieren | Cache: 1.2 MB
+2026-03-15 08:09:07,873 [INFO] Loop 1800 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 0.6 MB
+2026-03-15 08:12:58,783 [INFO] Loop 1860 | Schmerz: 0.02 | Aktion: nichts_tun | Cache: 103.2 MB
+2026-03-15 08:13:49,556 [INFO] Loop 1920 | Schmerz: 0.07 | Aktion: nichts_tun | Cache: 205.8 MB
+2026-03-15 08:17:19,023 [INFO] Loop 1980 | Schmerz: 0.10 | Aktion: pausieren | Cache: 0.4 MB
+2026-03-15 08:22:22,718 [INFO] Loop 2040 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 1.0 MB
+2026-03-15 08:23:40,189 [INFO] Loop 2100 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 50.4 MB
+2026-03-15 08:28:02,309 [INFO] Loop 2160 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.6 MB
+2026-03-15 08:31:14,554 [INFO] Loop 2220 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 1.8 MB
+2026-03-15 08:31:59,843 [INFO] Loop 2280 | Schmerz: 0.16 | Aktion: pausieren | Cache: 1.8 MB
+2026-03-15 08:33:02,957 [INFO] Loop 2340 | Schmerz: 0.02 | Aktion: nichts_tun | Cache: 105.2 MB
+2026-03-15 08:33:52,401 [INFO] Loop 2400 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 51.0 MB
+2026-03-15 08:34:30,440 [INFO] Loop 2460 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 52.4 MB
+2026-03-15 08:35:37,710 [INFO] Loop 2520 | Schmerz: 0.22 | Aktion: reflex | Cache: 102.8 MB
+2026-03-15 08:38:18,344 [INFO] Loop 2580 | Schmerz: 0.05 | Aktion: rechenintensitaet_hoch | Cache: 158.6 MB
+2026-03-15 08:40:26,639 [INFO] Loop 2640 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 55.2 MB
+2026-03-15 08:45:15,384 [INFO] Loop 2700 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.4 MB
+2026-03-15 08:50:14,837 [INFO] Loop 2760 | Schmerz: 0.18 | Aktion: speicher_vergroessern | Cache: 151.8 MB
+2026-03-15 08:53:43,703 [INFO] Loop 2820 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.4 MB
+2026-03-15 08:56:57,195 [INFO] Loop 2880 | Schmerz: 0.03 | Aktion: pausieren | Cache: 1.0 MB
+2026-03-15 09:00:29,435 [INFO] Loop 2940 | Schmerz: 0.21 | Aktion: reflex | Cache: 51.2 MB
+2026-03-15 09:02:41,700 [INFO] Loop 3000 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 50.4 MB
+2026-03-15 09:04:29,537 [INFO] Loop 3060 | Schmerz: 0.01 | Aktion: speicher_vergroessern | Cache: 51.4 MB
+2026-03-15 09:07:26,349 [INFO] Schlaf-Signal erkannt — Einschlafen...
+2026-03-15 09:07:26,996 [INFO] Konsolidiert: 214 Erfahrungen. Gute Nacht.
+2026-03-15 09:07:26,997 [INFO] Aufräumen...
+2026-03-15 09:07:27,037 [INFO] Genesis beendet. Wach seit 3143 Iterationen.
+2026-03-15 09:12:30,347 [INFO] Genesis erwacht...
+2026-03-15 09:12:30,357 [INFO] Aufwach-Typ: schlaf
+2026-03-15 09:12:30,360 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 09:12:30,361 [INFO] Entwicklungsphase: embryo (0.0 Wachtage)
+2026-03-15 09:13:00,471 [INFO] Hauptloop gestartet.
+2026-03-15 09:16:34,628 [INFO] Loop 60 | Schmerz: 0.24 | Aktion: reflex | Cache: 0.4 MB | Phase: embryo
+2026-03-15 09:19:26,771 [INFO] Loop 120 | Schmerz: 0.04 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 09:20:23,078 [INFO] Loop 180 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 1.2 MB | Phase: embryo
+2026-03-15 09:21:15,732 [INFO] Loop 240 | Schmerz: 0.08 | Aktion: abtastrate_schneller | Cache: 152.6 MB | Phase: embryo
+2026-03-15 09:24:35,275 [INFO] Loop 300 | Schmerz: 0.13 | Aktion: rechenintensitaet_hoch | Cache: 0.8 MB | Phase: embryo
+2026-03-15 09:28:00,416 [INFO] Loop 360 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 1.2 MB | Phase: embryo
+2026-03-15 09:32:55,054 [INFO] Loop 420 | Schmerz: 0.13 | Aktion: pausieren | Cache: 51.4 MB | Phase: embryo
+2026-03-15 09:35:47,352 [INFO] Loop 480 | Schmerz: 0.06 | Aktion: rechenintensitaet_runter | Cache: 52.0 MB | Phase: embryo
+2026-03-15 09:36:59,292 [INFO] Loop 540 | Schmerz: 0.22 | Aktion: reflex | Cache: 55.6 MB | Phase: embryo
+2026-03-15 09:38:51,158 [INFO] Loop 600 | Schmerz: 0.02 | Aktion: abtastrate_schneller | Cache: 104.8 MB | Phase: embryo
+2026-03-15 09:41:37,635 [INFO] Loop 660 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 58.8 MB | Phase: embryo
+2026-03-15 09:44:08,338 [INFO] Loop 720 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.6 MB | Phase: embryo
+2026-03-15 09:47:36,150 [WARNING] SIGTERM empfangen — Notfall-Heartbeat wird geschrieben
+2026-03-15 09:47:36,167 [INFO] Aufräumen...
+2026-03-15 09:47:36,177 [INFO] Genesis beendet. Wach seit 795 Iterationen.
+2026-03-15 09:51:53,885 [INFO] Genesis erwacht...
+2026-03-15 09:51:53,898 [INFO] Aufwach-Typ: tod
+2026-03-15 09:51:53,899 [WARNING] Tod erkannt! Zeitlücke: 257.7 Sekunden, letzter Schmerz: 0.15
+2026-03-15 09:51:53,900 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 09:51:53,902 [INFO] Entwicklungsphase: embryo (0.0 Wachtage)
+2026-03-15 09:52:24,025 [INFO] Hauptloop gestartet.
+2026-03-15 09:55:30,722 [INFO] Loop 60 | Schmerz: 0.01 | Aktion: pausieren | Cache: 2.0 MB | Phase: embryo
+2026-03-15 09:57:25,200 [INFO] Loop 120 | Schmerz: 0.02 | Aktion: rechenintensitaet_runter | Cache: 0.6 MB | Phase: embryo
+2026-03-15 09:59:29,650 [WARNING] SIGTERM empfangen — Notfall-Heartbeat wird geschrieben
+2026-03-15 09:59:29,738 [INFO] Aufräumen...
+2026-03-15 09:59:29,759 [INFO] Genesis beendet. Wach seit 177 Iterationen.
+2026-03-15 10:00:49,333 [INFO] Genesis erwacht...
+2026-03-15 10:00:49,341 [INFO] Aufwach-Typ: tod
+2026-03-15 10:00:49,342 [WARNING] Tod erkannt! Zeitlücke: 79.6 Sekunden, letzter Schmerz: 0.22
+2026-03-15 10:00:49,343 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 10:00:49,344 [INFO] Entwicklungsphase: embryo (0.0 Wachtage)
+2026-03-15 10:01:19,463 [INFO] Hauptloop gestartet.
+2026-03-15 10:02:34,831 [INFO] Loop 60 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 0.6 MB | Phase: embryo
+2026-03-15 10:06:20,245 [WARNING] SIGTERM empfangen — Notfall-Heartbeat wird geschrieben
+2026-03-15 10:06:20,266 [INFO] Aufräumen...
+2026-03-15 10:06:20,280 [INFO] Genesis beendet. Wach seit 139 Iterationen.
+2026-03-15 10:07:13,430 [INFO] Genesis erwacht...
+2026-03-15 10:07:13,440 [INFO] Aufwach-Typ: tod
+2026-03-15 10:07:13,442 [WARNING] Tod erkannt! Zeitlücke: 53.2 Sekunden, letzter Schmerz: 0.01
+2026-03-15 10:07:13,443 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 10:07:13,444 [INFO] Entwicklungsphase: embryo (0.0 Wachtage)
+2026-03-15 10:07:43,563 [INFO] Hauptloop gestartet.
+2026-03-15 10:12:20,555 [INFO] Loop 60 | Schmerz: 0.03 | Aktion: rechenintensitaet_hoch | Cache: 0.6 MB | Phase: embryo
+2026-03-15 10:16:42,402 [INFO] Loop 120 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 0.8 MB | Phase: embryo
+2026-03-15 10:20:06,867 [INFO] Loop 180 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 50.8 MB | Phase: embryo
+2026-03-15 10:24:26,192 [INFO] Loop 240 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 0.6 MB | Phase: embryo
+2026-03-15 10:26:02,649 [INFO] Loop 300 | Schmerz: 0.24 | Aktion: reflex | Cache: 1.0 MB | Phase: embryo
+2026-03-15 10:27:50,032 [INFO] Loop 360 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 10:31:12,951 [INFO] Loop 420 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 50.8 MB | Phase: embryo
+2026-03-15 10:32:19,678 [INFO] Loop 480 | Schmerz: 0.06 | Aktion: abtastrate_langsamer | Cache: 51.4 MB | Phase: embryo
+2026-03-15 10:33:55,356 [INFO] Loop 540 | Schmerz: 0.04 | Aktion: abtastrate_langsamer | Cache: 153.0 MB | Phase: embryo
+2026-03-15 10:36:21,459 [INFO] Loop 600 | Schmerz: 0.21 | Aktion: reflex | Cache: 50.8 MB | Phase: embryo
+2026-03-15 10:38:02,609 [INFO] Loop 660 | Schmerz: 0.06 | Aktion: abtastrate_langsamer | Cache: 0.4 MB | Phase: embryo
+2026-03-15 10:40:44,371 [INFO] Loop 720 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.4 MB | Phase: embryo
+2026-03-15 10:40:59,558 [WARNING] SIGTERM empfangen — Notfall-Heartbeat wird geschrieben
+2026-03-15 10:40:59,565 [INFO] Aufräumen...
+2026-03-15 10:40:59,574 [INFO] Genesis beendet. Wach seit 758 Iterationen.
+2026-03-15 10:45:37,189 [INFO] Genesis erwacht...
+2026-03-15 10:45:37,200 [INFO] Aufwach-Typ: tod
+2026-03-15 10:45:37,201 [WARNING] Tod erkannt! Zeitlücke: 277.6 Sekunden, letzter Schmerz: 0.01
+2026-03-15 10:45:37,204 [INFO] Wachphase: 30 Sekunden nur Fühlen...
+2026-03-15 10:45:37,205 [INFO] Entwicklungsphase: embryo (0.1 Wachtage)
+2026-03-15 10:46:07,333 [INFO] Hauptloop gestartet.
+2026-03-15 10:50:00,282 [INFO] Loop 60 | Schmerz: 0.07 | Aktion: rechenintensitaet_runter | Cache: 0.4 MB | Phase: embryo
+2026-03-15 10:52:20,364 [INFO] Loop 120 | Schmerz: 0.01 | Aktion: abtastrate_langsamer | Cache: 0.4 MB | Phase: embryo
+2026-03-15 10:53:44,301 [INFO] Loop 180 | Schmerz: 0.17 | Aktion: pausieren | Cache: 203.4 MB | Phase: embryo
+2026-03-15 10:55:17,504 [INFO] Loop 240 | Schmerz: 0.16 | Aktion: speicher_verkleinern | Cache: 1.0 MB | Phase: embryo
+2026-03-15 10:59:41,305 [INFO] Loop 300 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.8 MB | Phase: embryo
+2026-03-15 11:01:43,644 [INFO] Loop 360 | Schmerz: 0.05 | Aktion: abtastrate_schneller | Cache: 51.6 MB | Phase: embryo
+2026-03-15 11:05:40,701 [INFO] Loop 420 | Schmerz: 0.06 | Aktion: nichts_tun | Cache: 0.4 MB | Phase: embryo
+2026-03-15 11:08:43,558 [INFO] Loop 480 | Schmerz: 0.21 | Aktion: reflex | Cache: 52.0 MB | Phase: embryo
+2026-03-15 11:09:40,550 [INFO] Loop 540 | Schmerz: 0.21 | Aktion: reflex | Cache: 0.8 MB | Phase: embryo
+2026-03-15 11:12:45,164 [INFO] Loop 600 | Schmerz: 0.21 | Aktion: reflex | Cache: 103.0 MB | Phase: embryo
+2026-03-15 11:14:09,749 [INFO] Loop 660 | Schmerz: 0.22 | Aktion: reflex | Cache: 1.8 MB | Phase: embryo
+2026-03-15 11:17:13,355 [INFO] Loop 720 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 51.8 MB | Phase: embryo
+2026-03-15 11:19:30,838 [INFO] Loop 780 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 11:22:07,046 [INFO] Loop 840 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 11:25:30,011 [INFO] Loop 900 | Schmerz: 0.22 | Aktion: reflex | Cache: 101.4 MB | Phase: embryo
+2026-03-15 11:26:59,779 [INFO] Loop 960 | Schmerz: 0.13 | Aktion: speicher_verkleinern | Cache: 1.6 MB | Phase: embryo
+2026-03-15 11:29:30,454 [INFO] Loop 1020 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 11:33:24,596 [INFO] Loop 1080 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 11:35:19,049 [INFO] Loop 1140 | Schmerz: 0.22 | Aktion: reflex | Cache: 51.8 MB | Phase: embryo
+2026-03-15 11:36:22,985 [INFO] Loop 1200 | Schmerz: 0.23 | Aktion: reflex | Cache: 102.0 MB | Phase: embryo
+2026-03-15 11:41:24,235 [INFO] Loop 1260 | Schmerz: 0.02 | Aktion: nichts_tun | Cache: 1.0 MB | Phase: embryo
+2026-03-15 11:45:08,240 [INFO] Loop 1320 | Schmerz: 0.22 | Aktion: reflex | Cache: 53.2 MB | Phase: embryo
+2026-03-15 11:47:11,495 [INFO] Loop 1380 | Schmerz: 0.09 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 11:51:13,015 [INFO] Loop 1440 | Schmerz: 0.20 | Aktion: abtastrate_langsamer | Cache: 2.6 MB | Phase: embryo
+2026-03-15 11:52:56,949 [INFO] Loop 1500 | Schmerz: 0.02 | Aktion: abtastrate_langsamer | Cache: 52.0 MB | Phase: embryo
+2026-03-15 11:55:24,327 [INFO] Loop 1560 | Schmerz: 0.02 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 11:56:45,604 [INFO] Loop 1620 | Schmerz: 0.01 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 11:58:40,768 [INFO] Loop 1680 | Schmerz: 0.05 | Aktion: abtastrate_schneller | Cache: 153.4 MB | Phase: embryo
+2026-03-15 11:59:08,431 [INFO] Loop 1740 | Schmerz: 0.01 | Aktion: abtastrate_schneller | Cache: 51.6 MB | Phase: embryo
+2026-03-15 11:59:58,687 [INFO] Loop 1800 | Schmerz: 0.01 | Aktion: rechenintensitaet_runter | Cache: 0.4 MB | Phase: embryo
+2026-03-15 12:01:21,337 [INFO] Loop 1860 | Schmerz: 0.01 | Aktion: rechenintensitaet_hoch | Cache: 51.4 MB | Phase: embryo
+2026-03-15 12:03:10,429 [INFO] Loop 1920 | Schmerz: 0.01 | Aktion: pausieren | Cache: 52.6 MB | Phase: embryo
+2026-03-15 12:04:11,363 [INFO] Loop 1980 | Schmerz: 0.03 | Aktion: abtastrate_langsamer | Cache: 100.8 MB | Phase: embryo
+2026-03-15 12:05:52,397 [INFO] Loop 2040 | Schmerz: 0.07 | Aktion: speicher_vergroessern | Cache: 253.2 MB | Phase: embryo
+2026-03-15 12:09:44,485 [INFO] Loop 2100 | Schmerz: 0.02 | Aktion: abtastrate_schneller | Cache: 1.0 MB | Phase: embryo
+2026-03-15 12:11:36,776 [INFO] Loop 2160 | Schmerz: 0.05 | Aktion: abtastrate_langsamer | Cache: 0.4 MB | Phase: embryo
+2026-03-15 12:12:33,666 [INFO] Loop 2220 | Schmerz: 0.04 | Aktion: nichts_tun | Cache: 106.6 MB | Phase: embryo
+2026-03-15 12:15:14,694 [INFO] Loop 2280 | Schmerz: 0.01 | Aktion: nichts_tun | Cache: 0.4 MB | Phase: embryo
+2026-03-15 12:19:04,372 [INFO] Loop 2340 | Schmerz: 0.12 | Aktion: speicher_verkleinern | Cache: 0.2 MB | Phase: embryo
+2026-03-15 12:21:03,766 [INFO] Loop 2400 | Schmerz: 0.20 | Aktion: reflex | Cache: 51.2 MB | Phase: embryo

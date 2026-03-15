@@ -902,7 +902,7 @@ function renderDash(d){
   h+='</div>';
 
   /* Exploration */
-  var expl=g.exploration||0;
+  var expl=typeof g.exploration==='number'?g.exploration:(g.exploration?1:0);
   h+='<div class="card"><div class="card-title">Exploration</div>';
   h+='<div class="row"><span class="label">Zufallsrate</span><span class="val '+(expl>0.5?'c-yellow':'c-green')+'">'+expl.toFixed(3)+'</span></div>';
   h+='<div class="bar-bg"><div class="bar-fill" style="width:'+(expl*100)+'%;background:'+(expl>0.5?'var(--yellow)':'var(--green)')+'"></div></div></div>';
@@ -1052,7 +1052,7 @@ function loadVerhalten(){
   h+='<div class="row"><span class="label">Aktion</span><span class="val c-cyan">'+(g.letzte_aktion||'?')+'</span></div>';
   h+='<div class="row"><span class="label">Schmerz</span><span class="val" style="color:'+fc(g.schmerz||0)+'">'+(g.schmerz||0).toFixed(4)+'</span></div>';
   h+='<div class="row"><span class="label">Wohlbefinden</span><span class="val" style="color:'+fcInv(g.wohlbefinden||0)+'">'+(g.wohlbefinden||0).toFixed(4)+'</span></div>';
-  h+='<div class="row"><span class="label">Exploration</span><span class="val c-yellow">'+(g.exploration||0).toFixed(3)+'</span></div>';
+  h+='<div class="row"><span class="label">Exploration</span><span class="val c-yellow">'+(typeof g.exploration==='number'?g.exploration:(g.exploration?1:0)).toFixed(3)+'</span></div>';
   h+='<div class="row"><span class="label">Tick</span><span class="val c-text">'+(g.tick||0)+'</span></div>';
   h+='<div class="row"><span class="label">Erfahrungen</span><span class="val c-text">'+(g.erfahrungen_gesamt||0)+'</span></div>';
   h+='</div>';
