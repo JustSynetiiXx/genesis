@@ -635,6 +635,64 @@ def _api_test_logs() -> dict[str, Any]:
     }
 
 
+# --- Globale Multi-Instance Control ---
+
+def _api_sleep_all() -> dict[str, Any]:
+    """Schreibt Schlaf-Signal für ALLE Instanzen."""
+    instanzen = _lade_instanzen()
+    ergebnisse: list[str] = []
+    for name in instanzen:
+        _schreibe_signal(f"SLEEP {time.time():.0f}", name)
+        ergebnisse.append(name)
+    return {"ok": True, "aktion": "sleep-all", "instanzen": ergebnisse}
+
+
+def _api_wake_all() -> dict[str, Any]:
+    """Weckt ALLE Instanzen auf."""
+    instanzen = _lade_instanzen()
+    ergebnisse: list[dict[str, Any]] = []
+    for name in instanzen:
+        if _genesis_lebt(name) == "lebt":
+            ergebnisse.append({"instanz": name, "ok": False, "grund": "läuft bereits"})
+            continue
+        signal_pfad = _instanz_pfade(name)[4]
+        try:
+            signal_pfad.unlink(missing_ok=True)
+        except OSError:
+            pass
+        subprocess.Popen(
+            [sys.executable, "-m", "vm.genesis.leben", "--instance", name],
+            env={**os.environ, "PYTHONPATH": "/opt/genesis"},
+            cwd="/opt/genesis",
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        ergebnisse.append({"instanz": name, "ok": True})
+    return {"ok": True, "aktion": "wake-all", "ergebnisse": ergebnisse}
+
+
+def _api_restart_all() -> dict[str, Any]:
+    """Restart-Signal für ALLE Instanzen."""
+    instanzen = _lade_instanzen()
+    ergebnisse: list[str] = []
+    for name in instanzen:
+        _schreibe_signal(f"SLEEP {time.time():.0f}", name)
+        ergebnisse.append(name)
+    return {"ok": True, "aktion": "restart-all", "instanzen": ergebnisse}
+
+
+def _api_export_all() -> dict[str, Any]:
+    """Kombinierter Export aller Instanzen."""
+    instanzen = _lade_instanzen()
+    alle_exports: dict[str, Any] = {}
+    for name in instanzen:
+        alle_exports[name] = _api_export(name)
+    return {
+        "export_zeitstempel": datetime.now().isoformat(),
+        "instanzen": alle_exports,
+    }
+
 
 
 HTML_SEITE: str = r"""<!DOCTYPE html>
@@ -1300,6 +1358,15 @@ function renderCtrl(){
   var el=document.getElementById('ctrl-content');
   var h='';
 
+  /* ALLE INSTANZEN */
+  h+='<div class="card" style="border-color:rgba(0,204,204,0.15)"><div class="card-title">Alle Instanzen</div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+  h+='<button class="btn btn-sleep" id="btn-sleep-all">Alle schlafen</button>';
+  h+='<button class="btn btn-wake" id="btn-wake-all">Alle aufwecken</button>';
+  h+='<button class="btn btn-restart" id="btn-restart-all">Alle neustarten</button>';
+  h+='<button class="btn" id="btn-export-all" style="border-color:rgba(0,204,204,0.25);color:var(--cyan)">Komplett-Export (alle)</button>';
+  h+='</div></div>';
+
   /* Schlaf/Aufwecken/Neustart */
   h+='<div class="card"><div class="card-title">Steuerung ('+esc(CI)+')</div>';
   h+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
@@ -1339,7 +1406,12 @@ function renderCtrl(){
 
   el.innerHTML=h;
 
-  /* Bind events */
+  /* Bind events — global */
+  document.getElementById('btn-sleep-all').onclick=function(){globalCmd('/api/control/sleep-all','Alle schlafen legen?');};
+  document.getElementById('btn-wake-all').onclick=function(){globalCmd('/api/control/wake-all','Alle aufwecken?');};
+  document.getElementById('btn-restart-all').onclick=function(){globalCmd('/api/control/restart-all','Alle neustarten?');};
+  document.getElementById('btn-export-all').onclick=exportAll;
+  /* Bind events — instance */
   document.getElementById('btn-sleep').onclick=function(){sendSignal('sleep');};
   document.getElementById('btn-wake').onclick=function(){sendSignal('wake');};
   document.getElementById('btn-restart').onclick=function(){sendSignal('restart');};
@@ -1356,6 +1428,22 @@ function renderCtrl(){
 }
 
 /* === Control Functions === */
+function globalCmd(url,msg){
+  if(!confirm(msg))return;
+  fetch(url,{method:'POST'}).then(function(r){return r.json();}).then(function(d){
+    if(d&&d.ok===false)alert('Fehler: '+(d.fehler||'Unbekannt'));
+  }).catch(function(e){dbg('Global cmd error: '+e);});
+}
+function exportAll(){
+  fetch('/api/export-all').then(function(r){return r.json();}).then(function(d){
+    var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    var ts=new Date().toISOString().replace(/[:.]/g,'').slice(0,15);
+    a.href=url;a.download='genesis_export_all_'+ts+'.json';a.click();
+    URL.revokeObjectURL(url);
+  }).catch(function(e){dbg('Export-all error: '+e);});
+}
 function sendSignal(typ){
   var urlMap={'sleep':'/api/signal/sleep','wake':iq('/api/control/wake'),
     'restart':iq('/api/control/restart'),'good':'/api/signal/good','bad':'/api/signal/bad'};
@@ -1488,6 +1576,8 @@ class GenesisHandler(BaseHTTPRequestHandler):
             self._sende_json(_api_umgebung(inst))
         elif pfad == "/api/export":
             self._sende_json(_api_export(inst))
+        elif pfad == "/api/export-all":
+            self._sende_json(_api_export_all())
         elif pfad == "/api/logs/archiv":
             self._sende_json(_api_logs_archiv())
         elif pfad.startswith("/api/logs/archiv/"):
@@ -1543,6 +1633,15 @@ class GenesisHandler(BaseHTTPRequestHandler):
         elif pfad == "/api/control/restart":
             _schreibe_signal(f"SLEEP {time.time():.0f}", inst)
             antwort = {"ok": True, "aktion": "restart"}
+
+        elif pfad == "/api/control/sleep-all":
+            antwort = _api_sleep_all()
+
+        elif pfad == "/api/control/wake-all":
+            antwort = _api_wake_all()
+
+        elif pfad == "/api/control/restart-all":
+            antwort = _api_restart_all()
 
         elif pfad in ("/api/test/cpu", "/api/test/ram", "/api/test/kombi"):
             test_typ: str = pfad.split("/")[-1]

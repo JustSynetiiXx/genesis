@@ -1,10 +1,10 @@
 """Entwicklungsphasen — Die Umgebung wird über Tage komplexer.
 
 Phasen basieren auf kumulativer Wachzeit (nicht Echtzeit-Tagen):
-- embryo (Tag 1-3): Nur Basis, keine Reize
-- fetus_frueh (Tag 4-7): Rhythmus, variable Nährstoffe, erste Reize
-- fetus_spaet (Tag 8-14): Alle Reize, Feedback, neue Aktionen
-- reif (ab Tag 15): Volle Komplexität
+- embryo (Tag 1): Nur Basis, keine Reize
+- fetus_frueh (Tag 2-5): Rhythmus, variable Nährstoffe, erste Reize
+- fetus_spaet (Tag 6-12): Alle Reize, Feedback, neue Aktionen
+- reif (ab Tag 13): Volle Komplexität
 """
 
 from __future__ import annotations
@@ -20,10 +20,10 @@ SEKUNDEN_PRO_TAG: int = 86400
 
 # Schwellen in kumulativen Wachtagen
 PHASE_SCHWELLEN: dict[str, int] = {
-    "embryo": 0,        # Tag 1-3
-    "fetus_frueh": 3,   # Tag 4-7
-    "fetus_spaet": 7,   # Tag 8-14
-    "reif": 14,         # Ab Tag 15
+    "embryo": 0,        # Tag 1
+    "fetus_frueh": 1,   # Tag 2-5
+    "fetus_spaet": 5,   # Tag 6-12
+    "reif": 12,         # Ab Tag 13
 }
 
 
