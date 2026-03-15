@@ -868,6 +868,7 @@ dbgEl.onclick=function(){dbgEl.style.display='none';dbgEl.textContent='';};
 var CI='genesis-1';
 var CT='home';
 var LS=null;
+var EF=0;
 
 /* Safe number helper */
 function sn(v){return(typeof v==='number'&&isFinite(v))?v:0;}
@@ -1026,7 +1027,7 @@ function renderHome(d){
 /* ============================================ */
 function loadAlle(){
   var el=document.getElementById('alle-content');
-  el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
+  if(!el.innerHTML)el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch('/api/instances').then(function(r){return r.json();}).then(function(d){
     if(!d.instanzen||d.instanzen.length===0){el.innerHTML='<div class="card"><div class="big c-dim">Keine Instanzen</div></div>';return;}
     var h='';
@@ -1116,7 +1117,7 @@ function renderKoerper(d){
 /* ============================================ */
 function loadGedaechtnis(){
   var el=document.getElementById('gedaechtnis-content');
-  el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
+  if(!el.innerHTML)el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   Promise.all([
     fetch(iq('/api/langzeit')).then(function(r){return r.json();}),
     fetch(iq('/api/tode')).then(function(r){return r.json();}),
@@ -1174,7 +1175,7 @@ function loadGedaechtnis(){
 /* ============================================ */
 function loadStats(){
   var el=document.getElementById('stats-content');
-  el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
+  if(!el.innerHTML)el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch(iq('/api/kurzzeit/stats')).then(function(r){return r.json();}).then(function(kz){
     var h='';
     var aktionen=kz.aktionen||{};
@@ -1228,7 +1229,7 @@ function loadStats(){
 /* ============================================ */
 function loadWomb(){
   var el=document.getElementById('womb-content');
-  el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
+  if(!el.innerHTML)el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch(iq('/api/umgebung')).then(function(r){return r.json();}).then(function(u){
     if(!u||u.fehler){el.innerHTML='<div class="card"><div class="big c-dim">'+(u&&u.fehler?esc(u.fehler):'Keine Daten')+'</div></div>';return;}
     var h='';
@@ -1291,7 +1292,7 @@ function loadWomb(){
 /* ============================================ */
 function loadPhasen(){
   var el=document.getElementById('phasen-content');
-  el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
+  if(!el.innerHTML)el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch(iq('/api/phasen')).then(function(r){return r.json();}).then(function(p){
     if(!p){el.innerHTML='<div class="card"><div class="big c-dim">Keine Phasendaten</div></div>';return;}
     var h='';
@@ -1336,7 +1337,7 @@ function loadPhasen(){
 /* ============================================ */
 function loadLogs(){
   var el=document.getElementById('logs-content');
-  el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
+  if(!el.innerHTML)el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch(iq('/api/logs')).then(function(r){return r.json();}).then(function(d){
     var logs=d.logs||[];
     var h='<div class="card"><div class="card-title">Logs (neueste zuerst)</div>';
@@ -1516,14 +1517,18 @@ function exportLogs(){
 /* ============================================ */
 function update(){
   fetch(iq('/api/status')).then(function(r){return r.json();}).then(function(d){
+    EF=0;
     LS=d;
     setBadge(d.genesis_status||'tot');
     loadTab(CT);
   }).catch(function(err){
-    setBadge('tot');
-    if(CT==='home'){
-      var el=document.getElementById('home-content');
-      if(el)el.innerHTML='<div class="card"><div class="big c-red">Verbindung verloren</div><div style="text-align:center;color:var(--text2);font-size:12px;margin-top:8px">'+esc(err)+'</div></div>';
+    EF++;
+    if(EF>=3){
+      setBadge('tot');
+      if(CT==='home'){
+        var el=document.getElementById('home-content');
+        if(el)el.innerHTML='<div class="card"><div class="big c-red">Verbindung verloren</div><div style="text-align:center;color:var(--text2);font-size:12px;margin-top:8px">'+esc(err)+'</div></div>';
+      }
     }
   });
 }
