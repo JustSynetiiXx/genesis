@@ -1209,18 +1209,33 @@ body {
 
 <!-- Tab-Bar -->
 <nav class="tab-bar">
-    <a class="tab" onclick="switchTab('uebersicht')"><span class="icon">👁️</span>Alle</a>
-    <a class="tab active" onclick="switchTab('dashboard')"><span class="icon">📊</span>Home</a>
-    <a class="tab" onclick="switchTab('koerper')"><span class="icon">🫀</span>Körper</a>
-    <a class="tab" onclick="switchTab('gedaechtnis')"><span class="icon">🧠</span>Memory</a>
-    <a class="tab" onclick="switchTab('verhalten')"><span class="icon">🎯</span>Stats</a>
-    <a class="tab" onclick="switchTab('umgebung')"><span class="icon">🫄</span>Womb</a>
-    <a class="tab" onclick="switchTab('phasen')"><span class="icon">📋</span>Phasen</a>
-    <a class="tab" onclick="switchTab('logs')"><span class="icon">📜</span>Logs</a>
-    <a class="tab" onclick="switchTab('steuerung')"><span class="icon">⚙️</span>Control</a>
+    <a class="tab" href="javascript:void(0)" onclick="switchTab('uebersicht')"><span class="icon">👁️</span>Alle</a>
+    <a class="tab active" href="javascript:void(0)" onclick="switchTab('dashboard')"><span class="icon">📊</span>Home</a>
+    <a class="tab" href="javascript:void(0)" onclick="switchTab('koerper')"><span class="icon">🫀</span>Körper</a>
+    <a class="tab" href="javascript:void(0)" onclick="switchTab('gedaechtnis')"><span class="icon">🧠</span>Memory</a>
+    <a class="tab" href="javascript:void(0)" onclick="switchTab('verhalten')"><span class="icon">🎯</span>Stats</a>
+    <a class="tab" href="javascript:void(0)" onclick="switchTab('umgebung')"><span class="icon">🫄</span>Womb</a>
+    <a class="tab" href="javascript:void(0)" onclick="switchTab('phasen')"><span class="icon">📋</span>Phasen</a>
+    <a class="tab" href="javascript:void(0)" onclick="switchTab('logs')"><span class="icon">📜</span>Logs</a>
+    <a class="tab" href="javascript:void(0)" onclick="switchTab('steuerung')"><span class="icon">⚙️</span>Control</a>
 </nav>
 
 <script>
+/* --- Fehler-Anzeige (für iPhone ohne Dev-Tools) --- */
+var _debugEl=null;
+function _showDebug(msg){
+    if(!_debugEl){
+        _debugEl=document.createElement('div');
+        _debugEl.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(255,0,0,0.9);color:#fff;padding:10px;font-size:12px;font-family:monospace;max-height:40vh;overflow:auto;white-space:pre-wrap;';
+        _debugEl.onclick=function(){_debugEl.style.display='none';};
+        document.body.appendChild(_debugEl);
+    }
+    _debugEl.style.display='block';
+    _debugEl.textContent+=msg+'\n';
+}
+window.onerror=function(msg,url,line,col,err){_showDebug('JS-Fehler: '+msg+' (Zeile '+line+')');};
+window.onunhandledrejection=function(e){_showDebug('Promise-Fehler: '+(e.reason||e));};
+
 /* --- Multi-Instance --- */
 var currentInstance = 'genesis-1';
 var instanceList = [];
@@ -1843,11 +1858,11 @@ function aktualisiere(){
             document.getElementById('btn-sleep').classList.remove('done');
             document.getElementById('btn-sleep').textContent='Gute Nacht';
         }
-    }).catch(function(){
+    }).catch(function(err){
         setBadge('tot');
         if(currentTab==='dashboard'){
             document.getElementById('dashboard-content').innerHTML=
-                '<div class="c-dim" style="text-align:center;padding:40px">Verbindung verloren...</div>';
+                '<div class="c-dim" style="text-align:center;padding:40px">Verbindung verloren: '+(err.message||err)+'</div>';
         }
     });
     if(currentTab==='logs')ladeLogPanel();
