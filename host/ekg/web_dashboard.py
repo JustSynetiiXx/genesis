@@ -895,7 +895,7 @@ function initInst(){
     });
   }).catch(function(){});
 }
-function pickInst(n){CI=n;initInst();update();}
+function pickInst(n){CI=n;initInst();update();loadTab(CT);}
 
 /* === Tab Switching === */
 var allTabs=document.querySelectorAll('.tab');
@@ -914,15 +914,15 @@ function sw(name){
 }
 
 function loadTab(name){
-  if(name==='home'&&LS)renderHome(LS);
+  if(name==='home'){if(LS)renderHome(LS);}
   else if(name==='alle')loadAlle();
-  else if(name==='koerper'&&LS)renderKoerper(LS);
+  else if(name==='koerper'){if(LS)renderKoerper(LS);}
   else if(name==='gedaechtnis')loadGedaechtnis();
   else if(name==='stats')loadStats();
   else if(name==='womb')loadWomb();
   else if(name==='phasen')loadPhasen();
   else if(name==='logs')loadLogs();
-  else if(name==='ctrl')renderCtrl();
+  else if(name==='ctrl'){if(!document.getElementById('btn-sleep'))renderCtrl();else updateTestStatus();}
 }
 
 /* === Helpers === */
@@ -1518,9 +1518,7 @@ function update(){
   fetch(iq('/api/status')).then(function(r){return r.json();}).then(function(d){
     LS=d;
     setBadge(d.genesis_status||'tot');
-    if(CT==='home')renderHome(d);
-    else if(CT==='koerper')renderKoerper(d);
-    if(CT==='ctrl')updateTestStatus();
+    loadTab(CT);
   }).catch(function(err){
     setBadge('tot');
     if(CT==='home'){
