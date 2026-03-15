@@ -96,7 +96,8 @@ def lernsignal_staerke(schmerz_delta: float) -> str:
 
 def waehle_aktion(zustand: dict[str, str], schmerz: float,
                   kurzzeit: KurzzeitGedaechtnis,
-                  langzeit: LangzeitGedaechtnis) -> tuple[str, bool]:
+                  langzeit: LangzeitGedaechtnis,
+                  verfuegbare_aktionen: list[str] | None = None) -> tuple[str, bool]:
     """Wählt eine Aktion basierend auf Erfahrung und Schmerz.
 
     1. Zustand im Gedächtnis nachschlagen
@@ -109,10 +110,14 @@ def waehle_aktion(zustand: dict[str, str], schmerz: float,
         schmerz: Aktueller Schmerzwert.
         kurzzeit: Kurzzeitgedächtnis.
         langzeit: Langzeitgedächtnis.
+        verfuegbare_aktionen: Liste verfügbarer Aktionsnamen
+            (None = Standard-Aktionen).
 
     Returns:
         Tuple von (aktion_name, ist_exploration).
     """
+    aktions_pool: list[str] = verfuegbare_aktionen or ALLE_AKTION_NAMEN
+
     # Langzeitgedächtnis hat Vorrang (konsolidiert, zuverlässiger)
     langzeit_aktionen: list[GelernteAktion] = langzeit.suche(zustand)
 
@@ -138,28 +143,30 @@ def waehle_aktion(zustand: dict[str, str], schmerz: float,
 
     if random.random() < p_exploration:
         # Exploration: Zufällige Aktion
-        return random.choice(ALLE_AKTION_NAMEN), True
+        return random.choice(aktions_pool), True
 
     # Exploitation: Beste bekannte Aktion wählen
     beste_aktion: str | None = None
 
-    # Langzeit-Aktionen bevorzugen
+    # Langzeit-Aktionen bevorzugen (nur wenn im Pool)
     if langzeit_aktionen:
         # Negativstes Delta = am meisten Schmerz reduziert
         for ga in langzeit_aktionen:
-            if ga.durchschnitt_delta < 0:
+            if ga.durchschnitt_delta < 0 and ga.aktion in aktions_pool:
                 beste_aktion = ga.aktion
                 break
 
-    # Fallback: Kurzzeit-Erfahrungen
+    # Fallback: Kurzzeit-Erfahrungen (nur wenn im Pool)
     if beste_aktion is None and kurzzeit_erfahrungen:
-        beste_kurzzeit: Erfahrung = min(kurzzeit_erfahrungen, key=lambda e: e.schmerz_delta)
-        if beste_kurzzeit.schmerz_delta < 0:
-            beste_aktion = beste_kurzzeit.aktion
+        pool_erfahrungen = [e for e in kurzzeit_erfahrungen if e.aktion in aktions_pool]
+        if pool_erfahrungen:
+            beste_kurzzeit: Erfahrung = min(pool_erfahrungen, key=lambda e: e.schmerz_delta)
+            if beste_kurzzeit.schmerz_delta < 0:
+                beste_aktion = beste_kurzzeit.aktion
 
     # Wenn immer noch keine gute Aktion gefunden → zufällig
     if beste_aktion is None:
-        return random.choice(ALLE_AKTION_NAMEN), True
+        return random.choice(aktions_pool), True
 
     return beste_aktion, False
 

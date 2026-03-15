@@ -125,6 +125,35 @@ class SpeicherCache:
             if self.groesse_mb() < CACHE_MAX_MB:
                 self._daten.append(bytearray(int(VERFALL_MB_PRO_TICK * 1024 * 1024)))
 
+    def natuerlicher_verfall_variabel(self, mb: float) -> None:
+        """Wächst um einen variablen Betrag (für Gebärmutter-Integration).
+
+        Args:
+            mb: Verfall in MB für diesen Tick.
+        """
+        if mb <= 0:
+            return
+        with self._lock:
+            if self.groesse_mb() < CACHE_MAX_MB:
+                self._daten.append(bytearray(max(1, int(mb * 1024 * 1024))))
+
+    def reduziere_um(self, mb: float) -> float:
+        """Reduziert den Cache um einen bestimmten Betrag.
+
+        Args:
+            mb: MB die freigegeben werden sollen.
+
+        Returns:
+            Tatsächlich freigegebene MB.
+        """
+        ziel_bytes: int = int(mb * 1024 * 1024)
+        freigegeben: int = 0
+        with self._lock:
+            while self._daten and freigegeben < ziel_bytes:
+                chunk = self._daten.pop()
+                freigegeben += len(chunk)
+        return freigegeben / (1024 * 1024)
+
     def groesse_mb(self) -> float:
         """Aktueller Cache in MB."""
         return sum(len(d) for d in self._daten) / (1024 * 1024)
@@ -176,6 +205,13 @@ AKTIONEN: dict[str, str] = {
     "abtastrate_schneller": "Öfter fühlen",
     "abtastrate_langsamer": "Seltener fühlen",
     "nichts_tun": "Nichts tun",
+}
+
+# Externe Aktionen (erst ab fetus_spaet verfügbar)
+EXTERNE_AKTIONEN: dict[str, str] = {
+    "signal_senden": "Signal in die Umgebung senden",
+    "umgebung_erkunden": "Umgebung abtasten (genauere Sensoren, kostet CPU)",
+    "rhythmus_anpassen": "Internen Rhythmus an externen anpassen",
 }
 
 # Reflex-Aktionen (nicht im normalen Aktions-Pool)
@@ -230,7 +266,18 @@ class AktionsManager:
             self.abtastrate.langsamer()
         elif aktion == "nichts_tun":
             pass  # Bewusst nichts
+        elif aktion in ("signal_senden", "umgebung_erkunden", "rhythmus_anpassen"):
+            pass  # Wird von GebaerMutter behandelt
 
-    def natuerlicher_verfall(self) -> None:
+    def natuerlicher_verfall(self, verfall_mb: float | None = None) -> None:
+        """Cache wächst automatisch (einmal pro Loop).
+
+        Args:
+            verfall_mb: Variabler Verfall in MB (None = Standard aus Config).
+        """
+        if verfall_mb is not None:
+            self.cache.natuerlicher_verfall_variabel(verfall_mb)
+        else:
+            self.cache.natuerlicher_verfall()
         """Cache wächst automatisch (einmal pro Loop)."""
         self.cache.natuerlicher_verfall()

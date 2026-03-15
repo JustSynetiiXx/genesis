@@ -300,6 +300,17 @@ def _lade_config() -> dict[str, Any]:
         return {"fehler": "vm.config nicht verfügbar"}
 
 
+def _api_umgebung() -> dict[str, Any]:
+    """Liest Umgebungsdaten aus dem Genesis-Status."""
+    status = _lese_genesis_status()
+    if status is None:
+        return {"fehler": "Genesis nicht erreichbar"}
+    umg = status.get("umgebung")
+    if umg is None:
+        return {"fehler": "Keine Umgebungsdaten verfügbar"}
+    return umg
+
+
 def _api_export() -> dict[str, Any]:
     """Komplett-Dump aller Daten als JSON für externe Analyse."""
     tode = _api_tode()
@@ -1018,6 +1029,12 @@ body {
     <div id="verhalten-content"><div class="c-dim">Lade...</div></div>
 </div>
 
+<!-- Tab: Umgebung -->
+<div class="page" id="page-umgebung">
+    <div class="page-header"><span class="page-title">Umgebung</span></div>
+    <div id="umgebung-content"><div class="c-dim">Lade...</div></div>
+</div>
+
 <!-- Tab: Phasen -->
 <div class="page" id="page-phasen">
     <div class="page-header"><span class="page-title">Phasen</span></div>
@@ -1084,6 +1101,7 @@ body {
     <a class="tab" onclick="switchTab('koerper')"><span class="icon">🫀</span>Körper</a>
     <a class="tab" onclick="switchTab('gedaechtnis')"><span class="icon">🧠</span>Memory</a>
     <a class="tab" onclick="switchTab('verhalten')"><span class="icon">🎯</span>Stats</a>
+    <a class="tab" onclick="switchTab('umgebung')"><span class="icon">🫄</span>Womb</a>
     <a class="tab" onclick="switchTab('phasen')"><span class="icon">📋</span>Phasen</a>
     <a class="tab" onclick="switchTab('logs')"><span class="icon">📜</span>Logs</a>
     <a class="tab" onclick="switchTab('steuerung')"><span class="icon">⚙️</span>Control</a>
@@ -1097,11 +1115,12 @@ function switchTab(name) {
     document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
     document.getElementById('page-'+name).classList.add('active');
     var tabs = document.querySelectorAll('.tab');
-    var names = ['dashboard','koerper','gedaechtnis','verhalten','phasen','logs','steuerung'];
+    var names = ['dashboard','koerper','gedaechtnis','verhalten','umgebung','phasen','logs','steuerung'];
     for (var i=0;i<names.length;i++) if (names[i]===name) tabs[i].classList.add('active');
     currentTab = name;
     if (name==='gedaechtnis') ladeGedaechtnis();
     if (name==='verhalten') ladeVerhalten();
+    if (name==='umgebung') ladeUmgebung();
     if (name==='phasen') ladePhasen();
     if (name==='logs') ladeLogPanel();
     if (name==='steuerung') ladeArchiv();
@@ -1114,7 +1133,8 @@ var AKTIONEN = {
     'speicher_freigeben_notfall':'RAM Notfall!','speicher_verkleinern':'RAM ↓',
     'speicher_beanspruchen':'RAM beanspruchen','speicher_vergroessern':'RAM ↑',
     'pausieren':'Pausieren','abtastrate_hoch':'Abtastrate ↑','abtastrate_runter':'Abtastrate ↓',
-    'nichts_tun':'Nichts tun','nichts':'Nichts tun'
+    'nichts_tun':'Nichts tun','nichts':'Nichts tun',
+    'signal_senden':'Signal senden','umgebung_erkunden':'Erkunden','rhythmus_anpassen':'Rhythmus sync'
 };
 function aktName(a){return AKTIONEN[a]||a;}
 function fmtTime(ts){
@@ -1215,6 +1235,18 @@ function renderDashboard(daten){
     h+='<div class="row"><span class="label">Langzeit</span><span class="value c-cyan">'+(g.erfahrungen_langzeit||0)+'</span></div>';
     h+='<div class="row"><span class="label">Tode</span><span class="value '+((g.tode_gesamt||0)>0?'c-red':'c-green')+'">'+(g.tode_gesamt||0)+'</span></div>';
     h+='</div>';
+    // Umgebung (kompakt)
+    var umg=g.umgebung;
+    if(umg){
+        var phL={'embryo':'Embryo','fetus_frueh':'Fetus (früh)','fetus_spaet':'Fetus (spät)','reif':'Reif'};
+        var phC={'embryo':'c-cyan','fetus_frueh':'c-yellow','fetus_spaet':'c-orange','reif':'c-green'};
+        h+='<div class="card"><div class="card-title">Umgebung</div>';
+        h+='<div class="row"><span class="label">Phase</span><span class="value '+(phC[umg.phase]||'c-dim')+'">'+(phL[umg.phase]||umg.phase)+'</span></div>';
+        h+='<div class="row"><span class="label">Rhythmus</span><span class="value c-cyan">'+(umg.rhythmus_kategorie||'?')+' ('+Math.round((umg.rhythmus||0)*100)+'%)</span></div>';
+        h+='<div class="row"><span class="label">Zone</span><span class="value '+(umg.zone==='stress_zone'?'c-orange':umg.zone==='komfort_zone'?'c-green':'c-cyan')+'">'+({'komfort_zone':'Komfort','normal_zone':'Normal','stress_zone':'Stress'}[umg.zone]||umg.zone)+'</span></div>';
+        if(umg.reiz_aktiv) h+='<div class="row"><span class="label">Reiz</span><span class="value c-orange">'+umg.reiz_typ+'</span></div>';
+        h+='</div>';
+    }
     el.innerHTML=h;
 }
 
@@ -1364,6 +1396,81 @@ function ladeVerhalten(){
         h+='<div class="row"><span class="label"><span class="c-green">■</span> Grün</span><span class="value c-dim">Senkt Schmerz (Δ &lt; -0.02)</span></div>';
         h+='<div class="row"><span class="label"><span class="c-cyan">■</span> Cyan</span><span class="value c-dim">Neutral (±0.02)</span></div>';
         h+='<div class="row"><span class="label"><span class="c-red">■</span> Rot</span><span class="value c-dim">Erhöht Schmerz (Δ &gt; +0.02)</span></div>';
+        h+='</div>';
+        el.innerHTML=h;
+    }).catch(function(){});
+}
+
+/* --- Umgebung Tab --- */
+function ladeUmgebung(){
+    fetch('/api/umgebung').then(function(r){return r.json();}).then(function(u){
+        var el=document.getElementById('umgebung-content'),h='';
+        if(!u||u.fehler){
+            el.innerHTML='<div class="c-dim" style="text-align:center;padding:40px">Keine Umgebungsdaten</div>';
+            return;
+        }
+        // Phase
+        var phaseC={'embryo':'c-cyan','fetus_frueh':'c-yellow','fetus_spaet':'c-orange','reif':'c-green'};
+        var phaseL={'embryo':'Embryo','fetus_frueh':'Fetus (früh)','fetus_spaet':'Fetus (spät)','reif':'Reif'};
+        h+='<div class="card"><div class="card-title">Entwicklungsphase</div>';
+        h+='<div class="big-number '+( phaseC[u.phase]||'c-dim')+'" style="font-size:24px">'+(phaseL[u.phase]||u.phase)+'</div>';
+        h+='<div class="row"><span class="label">Wachtage</span><span class="value c-cyan">'+u.wachtage.toFixed(2)+' Tage</span></div>';
+        var wS=u.wachzeit_sekunden||0;
+        var wH=Math.floor(wS/3600),wM=Math.floor((wS%3600)/60);
+        h+='<div class="row"><span class="label">Wachzeit</span><span class="value c-text">'+wH+'h '+wM+'m</span></div>';
+        h+='</div>';
+        // Rhythmus
+        h+='<div class="card"><div class="card-title">Tagesrhythmus</div>';
+        var rW=u.rhythmus||0.5;
+        var rP=Math.round(rW*100);
+        var rF=rW<0.3?'var(--cyan)':rW<0.7?'var(--yellow)':'var(--orange)';
+        h+='<div class="big-number" style="color:'+rF+'">'+rP+'%</div>';
+        h+=bar(rW,rF);
+        var rKat=u.rhythmus_kategorie||'aktiv';
+        h+='<div style="text-align:center;font-size:13px;color:var(--text-secondary);margin-top:4px">';
+        h+=rKat.charAt(0).toUpperCase()+rKat.slice(1)+' — ';
+        h+=(rW<0.3?'Nachtphase (weniger Nährstoffe)':rW<0.7?'Aktivphase':'Peak (mehr Nährstoffe)');
+        h+='</div></div>';
+        // Verfall + Nährstoffe
+        h+='<div class="dual"><div class="card"><div class="card-title">Verfall</div>';
+        var vMB=u.verfall_mb||0.2;
+        var vF=vMB<0.15?'c-green':vMB<0.25?'c-yellow':'c-orange';
+        h+='<div class="big-number '+vF+'" style="font-size:20px">'+vMB.toFixed(3)+' MB/t</div>';
+        h+='<div class="row"><span class="label">Mod</span><span class="value c-dim">×'+(u.verfall_mod||1).toFixed(2)+'</span></div>';
+        h+='</div>';
+        h+='<div class="card"><div class="card-title">Nährstoff</div>';
+        h+='<div class="big-number c-cyan" style="font-size:20px">'+(u.ticks_bis_schub||'?')+'</div>';
+        h+='<div style="text-align:center;font-size:11px;color:var(--text-secondary)">Ticks bis Schub</div>';
+        if(u.letzter_schub) h+='<div style="text-align:center;font-size:12px;color:var(--green);margin-top:4px">Schub: '+(u.schub_menge||0).toFixed(1)+' MB</div>';
+        h+='</div></div>';
+        // Reiz
+        h+='<div class="card"><div class="card-title">Aktiver Reiz</div>';
+        if(u.reiz_aktiv){
+            var rTypL={'vibration':'Vibration','waerme':'Wärme','druck':'Druck'};
+            var rTypC={'vibration':'c-yellow','waerme':'c-orange','druck':'c-cyan'};
+            h+='<div class="big-number '+(rTypC[u.reiz_typ]||'c-text')+'" style="font-size:20px">'+(rTypL[u.reiz_typ]||u.reiz_typ)+'</div>';
+            h+='<div class="row"><span class="label">Stärke</span><span class="value c-orange">'+(u.reiz_staerke||0).toFixed(1)+'</span></div>';
+            h+='<div class="row"><span class="label">Verbleibend</span><span class="value c-text">'+(u.reiz_dauer||0)+' Ticks</span></div>';
+        } else {
+            h+='<div class="big-number c-dim" style="font-size:18px">Keiner</div>';
+        }
+        h+='</div>';
+        // Feedback-Zone
+        h+='<div class="card"><div class="card-title">Feedback-Zone</div>';
+        var zoneL={'komfort_zone':'Komfort','normal_zone':'Normal','stress_zone':'Stress'};
+        var zoneC={'komfort_zone':'c-green','normal_zone':'c-cyan','stress_zone':'c-orange'};
+        var zoneD={'komfort_zone':'Genesis geht es zu gut → mehr Herausforderung','normal_zone':'Ausgeglichen — keine Anpassung','stress_zone':'Genesis leidet → mehr Fürsorge'};
+        var zone=u.zone||'normal_zone';
+        h+='<div class="big-number '+(zoneC[zone]||'c-dim')+'" style="font-size:20px">'+(zoneL[zone]||zone)+'</div>';
+        h+='<div style="text-align:center;font-size:12px;color:var(--text-secondary);margin-top:4px">'+(zoneD[zone]||'')+'</div>';
+        h+='</div>';
+        // Features
+        var feat=u.features||{};
+        h+='<div class="card"><div class="card-title">Aktive Features</div>';
+        var feats=[['Rhythmus',feat.rhythmus],['Variable Nährstoffe',feat.naehrung],['Reize',feat.reize],['Feedback',feat.feedback],['Externe Aktionen',feat.externe_aktionen]];
+        for(var i=0;i<feats.length;i++){
+            h+='<div class="row"><span class="label">'+feats[i][0]+'</span><span class="value '+(feats[i][1]?'c-green':'c-dim')+'">'+(feats[i][1]?'aktiv':'—')+'</span></div>';
+        }
         h+='</div>';
         el.innerHTML=h;
     }).catch(function(){});
@@ -1572,6 +1679,7 @@ function aktualisiere(){
     if(currentTab==='logs')ladeLogPanel();
     if(currentTab==='gedaechtnis')ladeGedaechtnis();
     if(currentTab==='verhalten')ladeVerhalten();
+    if(currentTab==='umgebung')ladeUmgebung();
     if(currentTab==='phasen')ladePhasen();
     aktualisiereTestStatus();
 }
@@ -1602,6 +1710,8 @@ class GenesisHandler(BaseHTTPRequestHandler):
             self._sende_json(_api_kurzzeit_stats())
         elif self.path == "/api/phasen":
             self._sende_json(_api_phasen())
+        elif self.path == "/api/umgebung":
+            self._sende_json(_api_umgebung())
         elif self.path == "/api/export":
             self._sende_json(_api_export())
         elif self.path == "/api/logs/archiv":

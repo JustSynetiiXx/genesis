@@ -150,8 +150,33 @@ class Koerper:
             "host_ram": _kategorie_ram(rohwerte["host_ram_frei_mb"]),
         }
 
+        # Umgebungssensoren (werden von leben.py gesetzt wenn Gebärmutter aktiv)
+        if "umgebung_rhythmus" in rohwerte:
+            kategorien["umgebung_rhythmus"] = _kategorie_rhythmus(
+                rohwerte["umgebung_rhythmus"]
+            )
+        if "reiz_aktiv" in rohwerte:
+            kategorien["reiz_aktiv"] = rohwerte.get("reiz_typ", "keiner")  # type: ignore[assignment]
+
         return {
             "kategorien": kategorien,
             "rohwerte": rohwerte,
             "zeitstempel": time.time(),
         }
+
+
+def _kategorie_rhythmus(wert: float) -> str:
+    """Kategorisiert den Umgebungs-Rhythmus.
+
+    Args:
+        wert: Rhythmus-Wert (0.0-1.0).
+
+    Returns:
+        'ruhig', 'aktiv' oder 'peak'.
+    """
+    if wert < 0.3:
+        return "ruhig"
+    elif wert < 0.7:
+        return "aktiv"
+    else:
+        return "peak"

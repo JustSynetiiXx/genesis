@@ -28,13 +28,14 @@ from vm.config import (
 
 LOG_DATEI_NAME: str = "genesis_log.txt"
 LOG_MAX_ZEILEN: int = 500
-from vm.genesis.aktionen import AktionsManager
+from vm.genesis.aktionen import ALLE_AKTION_NAMEN, AktionsManager
 from vm.genesis.gedaechtnis import Heartbeat, KurzzeitGedaechtnis, LangzeitGedaechtnis
 from vm.genesis.koerper import Koerper
 from vm.genesis.lernen import Erfahrung, lerne, lerne_aus_reflex, waehle_aktion
 from vm.genesis.reflexe import pruefe as pruefe_reflexe
 from vm.genesis.schmerz import berechne_schmerz, berechne_schmerz_details, berechne_wohlbefinden, warnstufe
 from vm.genesis import schlaf as schlaf_modul
+from vm.genesis.umgebung.umgebung import GebaerMutter
 
 logging.basicConfig(
     level=logging.INFO,
@@ -84,7 +85,8 @@ def _schreibe_status(status_pfad: Path, zustand: dict[str, Any],
                      erfahrungen_heute: int, erfahrungen_langzeit: int,
                      tode_gesamt: int, letzter_tod: dict[str, Any] | None,
                      wach_seit: int, modus: str,
-                     schmerz_details: dict[str, Any] | None = None) -> None:
+                     schmerz_details: dict[str, Any] | None = None,
+                     umgebung_daten: dict[str, Any] | None = None) -> None:
     """Schreibt den Genesis-Status als JSON für das EKG.
 
     Atomares Schreiben: temp-Datei → rename.
@@ -111,6 +113,7 @@ def _schreibe_status(status_pfad: Path, zustand: dict[str, Any],
         "wach_seit": wach_seit,
         "modus": modus,
         "schmerz_details": schmerz_details,
+        "umgebung": umgebung_daten,
     }
 
     try:
@@ -163,6 +166,7 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
     heartbeat_db: Heartbeat = Heartbeat(db / "heartbeat.db")
     langzeit_db: LangzeitGedaechtnis = LangzeitGedaechtnis(db / "langzeit.db")
     kurzzeit_db: KurzzeitGedaechtnis = KurzzeitGedaechtnis(db / "kurzzeit.db")
+    gebaermutter: GebaerMutter = GebaerMutter(db_verzeichnis=db)
 
     # Letzter bekannter Zustand (für SIGTERM-Handler)
     letzter_zustand: dict[str, str] = {}
@@ -209,11 +213,31 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
     try:
         # --- 2. Wachphase: Nur Fühlen, keine Aktionen ---
         logger.info("Wachphase: %d Sekunden nur Fühlen...", WACHPHASE_SEKUNDEN)
+        logger.info("Entwicklungsphase: %s (%.1f Wachtage)",
+                     gebaermutter.entwicklung.aktuelle_phase(),
+                     gebaermutter.entwicklung.wachtage)
         for i in range(WACHPHASE_SEKUNDEN):
             if max_loops is not None and wach_seit >= max_loops:
                 break
 
+            # Umgebung ticken
+            umg_daten: dict[str, Any] = gebaermutter.tick(LOOP_INTERVALL)
+
             zustand: dict[str, Any] = koerper.fuehle()
+
+            # Reize auf Rohwerte anwenden
+            zustand["rohwerte"] = gebaermutter.wende_reiz_auf_rohwerte_an(
+                zustand["rohwerte"]
+            )
+            # Umgebungssensoren hinzufügen
+            zustand["rohwerte"]["umgebung_rhythmus"] = umg_daten["rhythmus"]
+            if umg_daten["reiz"] is not None:
+                zustand["rohwerte"]["reiz_aktiv"] = 1.0
+                zustand["rohwerte"]["reiz_typ"] = umg_daten["reiz"].typ
+            else:
+                zustand["rohwerte"]["reiz_aktiv"] = 0.0
+                zustand["rohwerte"]["reiz_typ"] = "keiner"
+
             schmerz_wert: float = berechne_schmerz(zustand["rohwerte"])
             stufe: str = warnstufe(schmerz_wert)
             wohlbefinden_wert: float = berechne_wohlbefinden(schmerz_wert, vorheriger_schmerz)
@@ -242,6 +266,7 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 langzeit_db.anzahl_tode(), langzeit_db.letzter_tod(),
                 wach_seit, modus,
                 schmerz_details=details,
+                umgebung_daten=gebaermutter.status_fuer_dashboard(),
             )
 
             vorheriger_schmerz = schmerz_wert
@@ -252,6 +277,9 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
         modus = "normal"
         logger.info("Hauptloop gestartet.")
         loop_zaehler: int = 0
+
+        # Aktionsliste dynamisch basierend auf Phase
+        import vm.genesis.aktionen as aktionen_modul
 
         while max_loops is None or wach_seit < max_loops:
             # Schlaf-Signal prüfen (am Anfang, damit sofort reagiert wird)
@@ -265,11 +293,37 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 logger.info("Konsolidiert: %d Erfahrungen. Gute Nacht.", konsolidiert)
                 break
 
+            # Umgebung ticken
+            umg_daten = gebaermutter.tick(aktionen.abtastrate.intervall)
+
             # Fühlen
             zustand = koerper.fuehle()
+
+            # Reize auf Rohwerte anwenden
+            zustand["rohwerte"] = gebaermutter.wende_reiz_auf_rohwerte_an(
+                zustand["rohwerte"]
+            )
+            # Umgebungssensoren hinzufügen
+            zustand["rohwerte"]["umgebung_rhythmus"] = umg_daten["rhythmus"]
+            if umg_daten["reiz"] is not None:
+                zustand["rohwerte"]["reiz_aktiv"] = 1.0
+                zustand["rohwerte"]["reiz_typ"] = umg_daten["reiz"].typ
+            else:
+                zustand["rohwerte"]["reiz_aktiv"] = 0.0
+                zustand["rohwerte"]["reiz_typ"] = "keiner"
+
+            # Nährstoff-Schub: Cache reduzieren
+            if umg_daten["schub_aktiv"] and umg_daten["schub_menge"] > 0:
+                reduziert: float = aktionen.cache.reduziere_um(umg_daten["schub_menge"])
+                if reduziert > 0:
+                    logger.debug("Nährstoff-Schub: %.1f MB Cache reduziert", reduziert)
+
             schmerz_wert = berechne_schmerz(zustand["rohwerte"])
             wohlbefinden_wert = berechne_wohlbefinden(schmerz_wert, vorheriger_schmerz)
             stufe = warnstufe(schmerz_wert)
+
+            # Feedback an Umgebung geben
+            gebaermutter.feedback(schmerz_wert)
 
             # Reflexe prüfen (haben Vorrang)
             gefeuerte_reflexe = pruefe_reflexe(zustand["rohwerte"])
@@ -299,21 +353,47 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                         schmerz_wert,
                     )
             else:
+                # Verfügbare Aktionen basierend auf Entwicklungsphase
+                zusatz: list[str] = gebaermutter.verfuegbare_zusatz_aktionen()
+                verfuegbar: list[str] = list(aktionen_modul.ALLE_AKTION_NAMEN)
+                verfuegbar.extend(zusatz)
+
                 # Entscheiden (Lernmechanismus)
                 aktion_name, exploration = waehle_aktion(
                     zustand["kategorien"], schmerz_wert,
                     kurzzeit_db, langzeit_db,
+                    verfuegbare_aktionen=verfuegbar,
                 )
 
                 # Handeln
                 aktionen.ausfuehren(aktion_name)
 
+                # Externe Aktionen in der Gebärmutter ausführen
+                if aktion_name == "signal_senden":
+                    gebaermutter.ausfuehren_signal_senden()
+                    logger.debug("Externe Aktion: signal_senden")
+                elif aktion_name == "umgebung_erkunden":
+                    gebaermutter.ausfuehren_umgebung_erkunden()
+                    logger.debug("Externe Aktion: umgebung_erkunden")
+                elif aktion_name == "rhythmus_anpassen":
+                    erfolg: bool = gebaermutter.ausfuehren_rhythmus_anpassen()
+                    logger.debug(
+                        "Externe Aktion: rhythmus_anpassen → %s",
+                        "Erfolg" if erfolg else "kein Effekt",
+                    )
+
                 # Bewusste Aktion merken (für Reflex-Lernen)
                 letzte_bewusste_aktion = aktion_name
                 zustand_bei_letzter_entscheidung = zustand["kategorien"]
 
-            # Natürlicher Verfall (immer, auch bei Reflex)
-            aktionen.natuerlicher_verfall()
+            # Natürlicher Verfall (variabel durch Gebärmutter)
+            aktionen.natuerlicher_verfall(umg_daten["verfall_mb"])
+
+            # Rhythmus-Anpassung Bonus: Verfall kurz senken bei Erfolg
+            if (aktion_name == "rhythmus_anpassen"
+                    and umg_daten["rhythmus"] > 0.6):
+                # Erfolg: Nächster Verfall wird reduziert (Cache schrumpft kurz)
+                aktionen.cache.reduziere_um(umg_daten["verfall_mb"] * 3)
 
             # Warten (basierend auf Abtastrate)
             time.sleep(aktionen.abtastrate.intervall)
@@ -354,6 +434,7 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
                 langzeit_db.anzahl_tode(), langzeit_db.letzter_tod(),
                 wach_seit, modus,
                 schmerz_details=details,
+                umgebung_daten=gebaermutter.status_fuer_dashboard(),
             )
 
             vorheriger_schmerz = schmerz_wert
@@ -361,11 +442,13 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
             loop_zaehler += 1
 
             if loop_zaehler % 60 == 0:
+                phase_info: str = gebaermutter.entwicklung.aktuelle_phase()
                 logger.info(
-                    "Loop %d | Schmerz: %.2f | Aktion: %s | Cache: %.1f MB",
+                    "Loop %d | Schmerz: %.2f | Aktion: %s | Cache: %.1f MB | Phase: %s",
                     loop_zaehler, schmerz_wert,
                     aktion_name or "reflex",
                     aktionen.cache.groesse_mb(),
+                    phase_info,
                 )
 
     except KeyboardInterrupt:
@@ -378,6 +461,7 @@ def main(shared_dir: Path | None = None, db_dir: Path | None = None,
         if modus != "einschlafen":
             heartbeat_db.aktualisiere(letzter_zustand, letzter_schmerz, schlaf_marker=False)
         aktionen.stoppe()
+        gebaermutter.speichere()
         heartbeat_db.schliesse()
         langzeit_db.schliesse()
         kurzzeit_db.schliesse()
