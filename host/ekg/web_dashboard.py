@@ -948,7 +948,7 @@ function warnText(schmerz){
   return 'KRITISCH';
 }
 
-var aN={'rechenintensitaet':'Rechen','speicher_freigeben':'Speicher','pause':'Pause','abtastrate':'Abtastrate','nichts':'Nichts'};
+var aN={'rechenintensitaet':'Rechen','speicher_freigeben':'Speicher','pause':'Pause','abtastrate':'Abtastrate','nichts':'Nichts','pausieren':'Pausieren','abtastrate_langsamer':'Abtastrate \u2193','abtastrate_schneller':'Abtastrate \u2191','rechenintensitaet_hoch':'Rechen \u2191','rechenintensitaet_runter':'Rechen \u2193','speicher_verkleinern':'Speicher \u2193','speicher_vergroessern':'Speicher \u2191','nichts_tun':'Nichts tun','signal_senden':'Signal senden','umgebung_erkunden':'Umgebung erkunden','rhythmus_anpassen':'Rhythmus anpassen'};
 
 /* ============================================ */
 /* === HOME TAB                             === */
@@ -966,9 +966,12 @@ function renderHome(d){
   h+='<span class="badge badge-'+st+'">'+(st==='lebt'?'LEBT':st==='schlaeft'?'SCHLAEFT':'TOT')+'</span>';
   h+='</div>';
 
-  /* Warn Banner */
+  /* Warn Banner — Farbe basierend auf g.warnstufe */
   var schmerz=sn(g.schmerz);
-  h+='<div class="warn-banner '+warnClass(schmerz)+'">'+warnText(schmerz)+'</div>';
+  var ws=g.warnstufe||'';
+  var wsC={'komfort':'warn-ok','unbehagen':'warn-low','schmerz':'warn-high','gefahr':'warn-crit','panik':'warn-crit'};
+  var wsT={'komfort':'Alles gut','unbehagen':'Leichter Stress','schmerz':'Warnung','gefahr':'GEFAHR','panik':'KRITISCH'};
+  h+='<div class="warn-banner '+(wsC[ws]||warnClass(schmerz))+'">'+(wsT[ws]||warnText(schmerz))+'</div>';
 
   /* Schmerz / Wohlbefinden side by side */
   var wohl=sn(g.wohlbefinden);
@@ -982,39 +985,39 @@ function renderHome(d){
   h+='</div>';
 
   /* Aktivitaet */
-  var aktion=g.letzte_aktion||'nichts';
-  var modus=g.modus||g.zustand_modus||'-';
+  var aktion=g.aktion||'nichts';
+  var modus=g.modus||'-';
   var cache=sn(g.cache_mb);
-  var rechen=sn(g.rechen_level||g.rechen_stufe);
-  var abtast=sn(g.abtastrate||g.aktuelle_abtastrate);
+  var rechen=sn(g.rechen_level);
+  var abtast=sn(g.abtastrate);
   var wachSeit=sn(g.wach_seit);
-  var expl=sExpl(g.exploration);
+  var expl=(g.exploration===true||g.exploration===false)?g.exploration:Boolean(g.exploration);
 
   h+='<div class="card"><div class="card-title">Aktivit&auml;t</div>';
   h+='<div class="row"><span class="label">Aktion</span><span class="val c-cyan">'+(aN[aktion]||esc(aktion))+'</span></div>';
   h+='<div class="row"><span class="label">Modus</span><span class="val c-text">'+esc(modus)+'</span></div>';
-  h+='<div class="row"><span class="label">Cache</span><span class="val" style="color:'+fc(cache/(sn(g.cache_max_mb)||50))+'">'+sf(cache,1)+' MB</span></div>';
+  h+='<div class="row"><span class="label">Cache</span><span class="val" style="color:'+fc(cache/1000)+'">'+sf(cache,1)+' MB</span></div>';
   h+='<div class="row"><span class="label">Rechen-Level</span><span class="val c-text">'+sf(rechen,0)+'</span></div>';
   h+='<div class="row"><span class="label">Abtastrate</span><span class="val c-text">'+sf(abtast,1)+'</span></div>';
-  h+='<div class="row"><span class="label">Exploration</span><span class="val '+(expl>0.3?'c-yellow':'c-green')+'">'+sf(expl,3)+'</span></div>';
+  h+='<div class="row"><span class="label">Exploration</span><span class="val '+(expl?'c-yellow':'c-green')+'">'+(expl?'Ja':'Nein')+'</span></div>';
   h+='<div class="row"><span class="label">Wach seit</span><span class="val c-text">'+fmtSec(wachSeit)+'</span></div>';
   h+='</div>';
 
   /* Lernen kompakt */
   h+='<div class="card"><div class="card-title">Lernen</div>';
-  h+='<div class="row"><span class="label">Erfahrungen (heute)</span><span class="val c-cyan">'+(g.erfahrungen_gesamt||0)+'</span></div>';
-  h+='<div class="row"><span class="label">Tick</span><span class="val c-text">'+(g.tick||0)+'</span></div>';
+  h+='<div class="row"><span class="label">Erfahrungen (heute)</span><span class="val c-cyan">'+(g.erfahrungen_heute||0)+'</span></div>';
+  h+='<div class="row"><span class="label">Langzeit-Muster</span><span class="val c-text">'+(g.erfahrungen_langzeit||0)+'</span></div>';
   h+='</div>';
 
   /* Umgebung kompakt */
-  var umg=g.umgebung||d.umgebung||null;
+  var umg=g.umgebung||null;
   if(umg&&!umg.fehler){
     h+='<div class="card"><div class="card-title">Umgebung</div>';
     h+='<div class="row"><span class="label">Phase</span><span class="val c-cyan">'+esc(umg.phase||'?')+'</span></div>';
-    var rW=sn(umg.rhythmus_wert);
+    var rW=sn(umg.rhythmus);
     h+='<div class="row"><span class="label">Rhythmus</span><span class="val c-text">'+sf(rW*100,0)+'%</span></div>';
     var zoneL={'komfort_zone':'Komfort','normal_zone':'Normal','stress_zone':'Stress'};
-    var zone=umg.zone||umg.feedback_zone||'normal_zone';
+    var zone=umg.feedback_zone||'normal_zone';
     h+='<div class="row"><span class="label">Zone</span><span class="val c-text">'+(zoneL[zone]||esc(zone))+'</span></div>';
     h+='</div>';
   }
@@ -1030,22 +1033,30 @@ function loadAlle(){
   if(!el.innerHTML)el.innerHTML='<div class="card"><div class="big c-dim">Lade...</div></div>';
   fetch('/api/instances').then(function(r){return r.json();}).then(function(d){
     if(!d.instanzen||d.instanzen.length===0){el.innerHTML='<div class="card"><div class="big c-dim">Keine Instanzen</div></div>';return;}
-    var h='';
-    for(var i=0;i<d.instanzen.length;i++){
-      var n=d.instanzen[i];
-      var sch=sn(n.schmerz);
-      h+='<div class="inst-card" data-inst="'+esc(n.name)+'">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
-      h+='<span style="font-weight:700;font-size:16px;color:#fff">'+esc(n.name)+'</span>';
-      h+='<span class="badge badge-'+n.status+'">'+esc(n.status)+'</span></div>';
-      h+='<div class="row"><span class="label">Schmerz</span><span class="val" style="color:'+fc(sch)+'">'+sf(sch,4)+'</span></div>';
-      h+='<div class="row"><span class="label">Phase</span><span class="val c-cyan">'+esc(n.phase||'?')+'</span></div>';
-      h+='<div class="row"><span class="label">Wach seit</span><span class="val c-text">'+fmtSec(sn(n.wach_seit))+'</span></div>';
-      h+='</div>';
-    }
-    el.innerHTML=h;
-    el.querySelectorAll('.inst-card').forEach(function(card){
-      card.onclick=function(){var inst=this.getAttribute('data-inst');pickInst(inst);sw('home');};
+    /* Fetch per-instance status for extra fields */
+    var fetches=d.instanzen.map(function(n){return fetch('/api/status?instance='+encodeURIComponent(n.name)).then(function(r){return r.json();}).catch(function(){return null;});});
+    Promise.all(fetches).then(function(statuses){
+      var h='';
+      for(var i=0;i<d.instanzen.length;i++){
+        var n=d.instanzen[i];
+        var st=statuses[i];
+        var sg=(st&&st.genesis)||{};
+        var sch=sn(n.schmerz);
+        h+='<div class="inst-card" data-inst="'+esc(n.name)+'">';
+        h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+        h+='<span style="font-weight:700;font-size:16px;color:#fff">'+esc(n.name)+'</span>';
+        h+='<span class="badge badge-'+n.status+'">'+esc(n.status)+'</span></div>';
+        h+='<div class="row"><span class="label">Schmerz</span><span class="val" style="color:'+fc(sch)+'">'+sf(sch,4)+'</span></div>';
+        h+='<div class="row"><span class="label">Phase</span><span class="val c-cyan">'+esc(n.phase||'?')+'</span></div>';
+        h+='<div class="row"><span class="label">Wach seit</span><span class="val c-text">'+fmtSec(sn(n.wach_seit))+'</span></div>';
+        h+='<div class="row"><span class="label">Erfahrungen (heute)</span><span class="val c-text">'+(sg.erfahrungen_heute||0)+'</span></div>';
+        h+='<div class="row"><span class="label">Langzeit-Muster</span><span class="val c-text">'+(sg.erfahrungen_langzeit||0)+'</span></div>';
+        h+='</div>';
+      }
+      el.innerHTML=h;
+      el.querySelectorAll('.inst-card').forEach(function(card){
+        card.onclick=function(){var inst=this.getAttribute('data-inst');pickInst(inst);sw('home');};
+      });
     });
   }).catch(function(e){el.innerHTML='<div class="card"><div class="big c-red">Fehler: '+esc(e)+'</div></div>';});
 }
@@ -1061,19 +1072,19 @@ function renderKoerper(d){
   /* Vitalwerte */
   h+='<div class="card"><div class="card-title">Vitalwerte</div>';
   if(g){
-    var ram=sn(g.ram_belegt_mb),ramMax=sn(g.ram_gesamt_mb)||2048;
-    var cpu=sn(g.cpu_prozent);
-    var cache=sn(g.cache_mb),cacheMax=sn(g.cache_max_mb)||50;
-    h+='<div class="row"><span class="label">RAM</span><span class="val" style="color:'+fc(ram/ramMax)+'">'+sf(ram,0)+' / '+ramMax+' MB</span></div>';
-    h+='<div class="row"><span class="label">CPU</span><span class="val" style="color:'+fc(cpu/200)+'">'+sf(cpu,1)+'%</span></div>';
+    var rw=g.rohwerte||{};
+    var ram=sn(rw.eigen_ram_mb);
+    var cpu=sn(rw.eigen_cpu_prozent);
+    var cache=sn(g.cache_mb),cacheMax=1000;
+    h+='<div class="row"><span class="label">RAM (eigen)</span><span class="val" style="color:'+fc(ram/2048)+'">'+sf(ram,0)+' MB</span></div>';
+    h+='<div class="row"><span class="label">CPU (eigen)</span><span class="val" style="color:'+fc(cpu/200)+'">'+sf(cpu,1)+'%</span></div>';
     h+='<div class="row"><span class="label">Cache</span><span class="val" style="color:'+fc(cache/cacheMax)+'">'+sf(cache,1)+' / '+cacheMax+' MB</span></div>';
-  }
-  if(s){
-    var sk=[['CPU Temp','cpu_temp','\u00b0C'],['CPU Last','cpu_last','%'],['RAM Host','ram_prozent','%'],['Fan','fan_rpm','RPM']];
-    for(var i=0;i<sk.length;i++){
-      var v=s[sk[i][1]];
+    /* Sensoren vom Körper */
+    var sn2=[['CPU Temp',rw.cpu_temp_tctl,'\u00b0C'],['Host CPU',rw.host_cpu_last,'%'],['VM RAM frei',rw.vm_ram_frei_mb,'MB'],['L\u00fcfter',rw.luefter_rpm,'RPM']];
+    for(var i=0;i<sn2.length;i++){
+      var v=sn2[i][1];
       if(v!==undefined&&v!==null){
-        h+='<div class="row"><span class="label">'+sk[i][0]+'</span><span class="val c-text">'+v+' '+sk[i][2]+'</span></div>';
+        h+='<div class="row"><span class="label">'+sn2[i][0]+'</span><span class="val c-text">'+sf(sn(v),1)+' '+sn2[i][2]+'</span></div>';
       }
     }
   }
@@ -1093,15 +1104,16 @@ function renderKoerper(d){
   }
 
   /* Schmerz-Beitraege */
-  var sd=g?(g.schmerz_details||g.schmerz_komponenten||g.schmerz_beitraege):null;
+  var sd=g?g.schmerz_details:null;
   if(sd&&typeof sd==='object'){
     h+='<div class="card"><div class="card-title">Schmerz-Beitr&auml;ge</div>';
     var keys=Object.keys(sd);
     for(var i=0;i<keys.length;i++){
-      var v=sn(sd[keys[i]]);
+      var detail=sd[keys[i]]||{};
+      var v=sn(detail.beitrag);
       var w=Math.min(v*100/0.3,100);
       h+='<div style="padding:4px 0">';
-      h+='<div class="row" style="margin-bottom:2px"><span class="label">'+esc(keys[i])+'</span><span class="val" style="color:'+fc(v)+'">'+sf(v,4)+'</span></div>';
+      h+='<div class="row" style="margin-bottom:2px"><span class="label">'+esc(keys[i])+' <span class="c-dim" style="font-size:10px">'+esc(detail.kategorie||'')+'</span></span><span class="val" style="color:'+fc(v)+'">'+sf(v,4)+'</span></div>';
       h+='<div class="meter"><div class="meter-fill" style="width:'+w+'%;background:'+fc(v)+'"></div></div>';
       h+='</div>';
     }
@@ -1153,7 +1165,7 @@ function loadGedaechtnis(){
           var zk=Object.keys(e.zustand);
           for(var j=0;j<zk.length;j++){
             var zv=e.zustand[zk[j]];
-            if(zv!=='normal'&&zv!=='niedrig')abw.push(zk[j]+':'+zv);
+            if(zv!=='normal'&&zv!=='niedrig'&&zv!=='leise'&&zv!=='kuehl')abw.push(zk[j]+':'+zv);
           }
           if(abw.length>0)zStr=abw.join(', ');
         }
@@ -1212,11 +1224,11 @@ function loadStats(){
     /* Current behavior from LS */
     if(LS&&LS.genesis){
       var g=LS.genesis;
-      var expl=sExpl(g.exploration);
+      var expl=(g.exploration===true||g.exploration===false)?g.exploration:Boolean(g.exploration);
       h+='<div class="card"><div class="card-title">Aktuell</div>';
-      h+='<div class="row"><span class="label">Aktion</span><span class="val c-cyan">'+(aN[g.letzte_aktion]||esc(g.letzte_aktion||'?'))+'</span></div>';
-      h+='<div class="row"><span class="label">Exploration</span><span class="val '+(expl>0.3?'c-yellow':'c-green')+'">'+sf(expl,3)+'</span></div>';
-      h+='<div class="row"><span class="label">Tick</span><span class="val c-text">'+(g.tick||0)+'</span></div>';
+      h+='<div class="row"><span class="label">Aktion</span><span class="val c-cyan">'+(aN[g.aktion]||esc(g.aktion||'?'))+'</span></div>';
+      h+='<div class="row"><span class="label">Exploration</span><span class="val '+(expl?'c-yellow':'c-green')+'">'+(expl?'Ja':'Nein')+'</span></div>';
+      h+='<div class="row"><span class="label">Erfahrungen (heute)</span><span class="val c-text">'+(g.erfahrungen_heute||0)+'</span></div>';
       h+='</div>';
     }
 
@@ -1238,8 +1250,14 @@ function loadWomb(){
     h+='<div class="card" style="text-align:center"><div class="card-title">Entwicklungsphase</div>';
     h+='<div class="big c-cyan" style="font-size:22px">'+esc(u.phase||'?')+'</div></div>';
 
+    /* Phase-Tag */
+    var pTag=sn(u.phase_tag);
+    var pSchwellen={'embryo':1,'fetus_frueh':5,'fetus_spaet':12,'reif':99};
+    var pMax=pSchwellen[u.phase||'']||99;
+    h+='<div style="text-align:center;color:var(--text2);font-size:13px;margin-top:4px">Tag '+sf(pTag,1)+' von '+pMax+'</div>';
+
     /* Rhythmus */
-    var rW=sn(u.rhythmus_wert);
+    var rW=sn(u.rhythmus);
     h+='<div class="card"><div class="card-title">Rhythmus</div>';
     h+='<div class="big c-cyan" style="font-size:22px">'+sf(rW*100,0)+'%</div>';
     h+='<div style="text-align:center;color:var(--text2);font-size:12px;margin-top:4px">'+esc(u.rhythmus_kategorie||'')+'</div>';
@@ -1248,15 +1266,15 @@ function loadWomb(){
 
     /* Verfall + Reiz */
     h+='<div class="dual">';
-    var vMB=sn(u.verfall_mb||u.verfall_modifikator||0.2);
+    var vMB=sn(u.verfall_modifikator);
     h+='<div class="card"><div class="card-title">Verfall</div>';
     h+='<div class="big" style="font-size:18px;color:'+(vMB<0.15?'var(--green)':vMB<0.25?'var(--yellow)':'var(--orange)')+'">'+sf(vMB,3)+'</div>';
     h+='<div style="text-align:center;font-size:11px;color:var(--dim)">MB/tick</div></div>';
-    var reiz=u.aktiver_reiz||u.reiz||null;
+    var reizTyp=u.reiz_aktiv;
     h+='<div class="card"><div class="card-title">Reiz</div>';
-    if(reiz&&typeof reiz==='object'&&reiz.typ){
-      h+='<div class="big c-orange" style="font-size:18px">'+esc(reiz.typ)+'</div>';
-      h+='<div style="text-align:center;font-size:11px;color:var(--dim)">St&auml;rke: '+sf(sn(reiz.staerke),1)+'</div>';
+    if(reizTyp&&reizTyp!=='keiner'){
+      h+='<div class="big c-orange" style="font-size:18px">'+esc(reizTyp)+'</div>';
+      h+='<div style="text-align:center;font-size:11px;color:var(--dim)">St&auml;rke: '+sf(sn(u.reiz_staerke),1)+' ('+sn(u.reiz_verbleibend)+'s)</div>';
     } else {
       h+='<div class="big c-dim" style="font-size:18px">Keiner</div>';
     }
@@ -1265,21 +1283,21 @@ function loadWomb(){
     /* Zone */
     var zoneL={'komfort_zone':'Komfort','normal_zone':'Normal','stress_zone':'Stress'};
     var zoneC={'komfort_zone':'var(--green)','normal_zone':'var(--cyan)','stress_zone':'var(--orange)'};
-    var zone=u.zone||u.feedback_zone||'normal_zone';
+    var zone=u.feedback_zone||'normal_zone';
     h+='<div class="card"><div class="card-title">Feedback-Zone</div>';
     h+='<div class="big" style="font-size:22px;color:'+(zoneC[zone]||'var(--dim)')+'">'+(zoneL[zone]||esc(zone))+'</div></div>';
 
     /* Features */
     var feat=u.features||{};
     h+='<div class="card"><div class="card-title">Features der Phase</div>';
-    var fl=[['Rhythmus',feat.rhythmus||feat.rhythmus_aktiv],
-            ['Variable N&auml;hrung',feat.naehrung||feat.variable_naehrung],
-            ['Reize',feat.reize||feat.reize_aktiv],
-            ['Feedback',feat.feedback||feat.feedback_aktiv],
+    var fl=[['Rhythmus',feat.rhythmus_aktiv],
+            ['Variable N&auml;hrung',feat.variable_naehrung],
+            ['Reize',feat.reize_aktiv],
+            ['Feedback',feat.feedback_aktiv],
             ['Ext. Aktionen',feat.externe_aktionen]];
     for(var i=0;i<fl.length;i++){
       h+='<div class="row"><span class="label">'+fl[i][0]+'</span>';
-      h+='<span class="val '+(fl[i][1]?'c-green':'c-dim')+'">'+(fl[i][1]?'Aktiv':'-')+'</span></div>';
+      h+='<span class="val '+(fl[i][1]?'c-green':'c-red')+'">'+(fl[i][1]?'\u2705':'\u274C')+'</span></div>';
     }
     h+='</div>';
 
